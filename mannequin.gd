@@ -236,6 +236,12 @@ func set_look_target(target: Variant) -> void:
 	_look_target = target
 
 
+## Nothing to do: the mannequin's weapon arm is always held up in front,
+## where the first-person camera can see it.
+func set_first_person(_on: bool) -> void:
+	pass
+
+
 ## The player's body sits on render layer 2 (set per mesh in mannequin.tscn,
 ## all but the arms) so the first-person camera can hide it. Anyone else must
 ## stay visible to that camera, so their meshes go back to layer 1.

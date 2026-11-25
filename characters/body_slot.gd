@@ -17,6 +17,7 @@ extends Node3D
 ##   apply_look(look: Dictionary)         colours, hair, build (villagers)
 ##   set_look_target(position or null)    turn the head towards something
 ##   use_as_player(is_player)             render layers for first person
+##   set_first_person(on)                 the player's camera is in first person
 ##
 ## Like an interface in other languages. GDScript has no interfaces, so this
 ## is a convention: each body simply has these members ("duck typing").
@@ -85,3 +86,7 @@ func apply_look(look: Dictionary) -> void:
 
 func set_look_target(target: Variant) -> void:
 	body.set_look_target(target)
+
+
+func set_first_person(on: bool) -> void:
+	body.set_first_person(on)

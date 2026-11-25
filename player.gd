@@ -79,6 +79,7 @@ func _physics_process(delta: float) -> void:
 	# 5. Animate the body to match how we're actually moving (after
 	#    move_and_slide, so walking into a wall doesn't play a full run).
 	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
+	_model.set_first_person(_camera_rig.first_person)
 	_model.update_pose(horizontal_speed, is_on_floor(), delta)
 
 	# 6. Fell off the world? Respawn.

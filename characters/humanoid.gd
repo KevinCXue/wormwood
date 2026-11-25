@@ -86,6 +86,15 @@ const SPRINT_SPEED := 8.25
 @export var weapon_offset := Vector3(-0.03, 0.08, 0.0)
 @export_range(0.0, 1.0) var carry_pose_strength := 0.85
 
+@export_group("First person")
+## Where the weapon hand sits in first person, relative to the camera
+## (metres: right, up, back; the camera looks along -Z).
+@export var fp_hand_offset := Vector3(0.24, -0.25, -0.45)
+## How the weapon is angled in first person, relative to the camera, in
+## degrees: X tips the top forward (negative), Z leans it in towards the
+## middle of the screen (positive, for the right hand).
+@export var fp_weapon_tilt_deg := Vector3(-25.0, 0.0, 15.0)
+
 var holding := false
 var equipped := false
 var strike_time: float:
@@ -113,6 +122,11 @@ var _air := 0.0
 var _carry := 0.0
 var _ready_pose := 0.0
 var _ground_offset := 0.0  # how far the model is lifted to keep its feet on the ground
+var _first_person := false
+var _fp := 0.0             # 0..1: how much the first-person weapon hold is applied
+var _ik: TwoBoneIK3D
+var _ik_target: Marker3D
+var _ik_pole: Marker3D
 
 ## Height of the ball-of-foot bones above the sole of the shoe, in metres.
 const SOLE := 0.02
@@ -144,6 +158,7 @@ func update_pose(speed: float, on_floor: bool, delta: float) -> void:
 	_ready_pose = lerpf(_ready_pose, 1.0 if equipped else 0.0, k)
 	_tree.set("parameters/ready/blend_amount", _ready_pose)
 	_update_look(delta)
+	_update_first_person_hold(delta)
 	_keep_feet_on_ground(on_floor, delta)
 
 
@@ -161,14 +176,17 @@ func set_look_target(target: Variant) -> void:
 
 
 ## The player's meshes go on render layer 2, which the first-person camera
-## hides (shadows still show). Held items are separate nodes, so they stay
-## visible in first person.
+## hides (shadows still show), except the arms: sleeves, bracers and hands
+## stay on layer 1, so in first person you see your own arms holding things,
+## animated exactly as in third person. (Shoulder armour is hidden: it would
+## sit right beside the camera.) Everyone else is all on layer 1.
 func use_as_player(is_player: bool) -> void:
 	_is_player = is_player
 	if _character == null:
 		return  # applied when the model is built
 	for mi in _character.find_children("*", "MeshInstance3D", true, false):
-		mi.layers = 2 if is_player else 1
+		var arm := mi.name.contains("Arms")  # *_Arms, *_Arms_Bracer
+		mi.layers = 2 if is_player and not arm else 1
 
 
 ## Left hand: keep the item upright on top of the hand, facing the way the
@@ -184,9 +202,27 @@ func place_carried(item: Item) -> void:
 
 ## Right hand: the item is a child of the hand bone's attachment, so it
 ## follows every frame of the swing on its own. Just set where it sits.
+## The item's own hold_rotation_deg.y spins it around its length (the axe
+## uses 180° so its blade faces away from you, knuckles-forward); the rest of
+## hold_rotation_deg is tuned for the mannequin's arm and doesn't apply here.
+##
+## In first person the weapon is instead angled relative to the camera (held
+## up in view, like a sword at the ready), still sitting in the hand; _fp
+## blends between the two so swings ease in and out of it.
 func place_equipped(item: Equipable) -> void:
-	var basis := Basis.from_euler(weapon_rotation_deg * (PI / 180.0))
+	var spin := Basis(Vector3.UP, deg_to_rad(item.hold_rotation_deg.y))
+	var basis := Basis.from_euler(weapon_rotation_deg * (PI / 180.0)) * spin
 	item.transform = Transform3D(basis, weapon_offset - basis * item.grip)
+	var camera := get_viewport().get_camera_3d()
+	if _fp > 0.001 and camera:
+		var fp_basis := camera.global_basis * Basis.from_euler(fp_weapon_tilt_deg * (PI / 180.0)) * spin
+		var palm := weapon_socket.global_transform * weapon_offset
+		var fp_transform := Transform3D(fp_basis, palm - fp_basis * item.grip)
+		item.global_transform = item.global_transform.interpolate_with(fp_transform, _fp)
+
+
+func set_first_person(on: bool) -> void:
+	_first_person = on
 
 
 ## Keys (all optional): body_type ("male"/"female"), outfit ("peasant"/
@@ -227,6 +263,7 @@ func _build(body_type: String, outfit: String) -> void:
 	carry_socket = _socket("CarrySocket", "hand_l")
 	weapon_socket = _socket("WeaponSocket", "hand_r")
 	_setup_look()
+	_setup_ik()
 	_setup_tree()
 	use_as_player(_is_player)
 
@@ -345,6 +382,45 @@ func _keep_feet_on_ground(on_floor: bool, delta: float) -> void:
 	var target := clampf(SOLE - lowest, -0.05, 0.15)
 	_ground_offset = lerpf(_ground_offset, target, 1.0 - exp(-8.0 * delta))
 	_character.position.y = _ground_offset
+
+
+# --- First-person arms ------------------------------------------------------------------
+
+## In third person the weapon arm just plays its animation. In first person
+## that leaves the hand down by your hip, out of view, so inverse kinematics
+## (IK) takes over: you say where the hand should be, and TwoBoneIK3D bends
+## the shoulder and elbow to put it there, the way your brain does when you
+## reach for something. The "pole" is a point the elbow bends towards
+## (down and out, like a relaxed arm).
+func _setup_ik() -> void:
+	if _ik_target == null:
+		_ik_target = Marker3D.new()
+		_ik_target.name = "FirstPersonHand"
+		add_child(_ik_target)
+		_ik_pole = Marker3D.new()
+		_ik_pole.name = "FirstPersonElbow"
+		add_child(_ik_pole)
+	_ik = TwoBoneIK3D.new()
+	_ik.setting_count = 1
+	_ik.set_root_bone_name(0, "upperarm_r")
+	_ik.set_middle_bone_name(0, "lowerarm_r")
+	_ik.set_end_bone_name(0, "hand_r")
+	_skeleton.add_child(_ik)
+	_ik.set_target_node(0, _ik.get_path_to(_ik_target))
+	_ik.set_pole_node(0, _ik.get_path_to(_ik_pole))
+	_ik.influence = 0.0
+
+
+## Fade the first-person hold in while the player is in first person with a
+## weapon out, and out while swinging (so the attack animation shows).
+func _update_first_person_hold(delta: float) -> void:
+	var want := 1.0 if _first_person and equipped and not is_swinging() else 0.0
+	_fp = lerpf(_fp, want, 1.0 - exp(-12.0 * delta))
+	_ik.influence = _fp
+	var camera := get_viewport().get_camera_3d()
+	if _fp > 0.001 and camera:
+		_ik_target.global_position = camera.global_transform * fp_hand_offset
+		_ik_pole.global_position = camera.global_transform * Vector3(0.7, -0.9, 0.1)
 
 
 # --- Looking --------------------------------------------------------------------------
