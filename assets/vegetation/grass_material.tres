@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/vegetation/grass_wind.gdshader" id="1_g8gb6"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_g8gb6")
+shader_parameter/base_color = null
+shader_parameter/tip_color = null
+shader_parameter/dry_tint = null
+shader_parameter/wind_strength = null
+shader_parameter/wind_speed = null
+shader_parameter/wind_direction = null
+shader_parameter/gust_size = null

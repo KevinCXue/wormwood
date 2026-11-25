@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/vegetation/pine_b.res" id="1_hpccn"]
+
+[node name="pine_b" type="MeshInstance3D" unique_id=1978435272]
+mesh = ExtResource("1_hpccn")

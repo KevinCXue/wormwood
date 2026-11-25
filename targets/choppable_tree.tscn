@@ -1,0 +1,62 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://targets/choppable_tree.gd" id="1_tree"]
+[ext_resource type="ArrayMesh" path="res://assets/vegetation/pine_a.res" id="2_pine"]
+
+[sub_resource type="CylinderShape3D" id="TrunkShape"]
+radius = 0.3
+height = 6.0
+
+[sub_resource type="StandardMaterial3D" id="CutWood"]
+albedo_color = Color(0.86, 0.71, 0.48, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Bark"]
+albedo_color = Color(0.28, 0.19, 0.13, 1)
+roughness = 1.0
+
+[sub_resource type="CylinderMesh" id="StumpMesh"]
+material = SubResource("Bark")
+top_radius = 0.255
+bottom_radius = 0.3
+height = 0.5
+radial_segments = 12
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CutFaceMesh"]
+material = SubResource("CutWood")
+top_radius = 0.24
+bottom_radius = 0.24
+height = 0.02
+radial_segments = 12
+rings = 1
+
+[node name="ChoppableTree" type="StaticBody3D"]
+editor_description = "Fell with the axe (targets/choppable_tree.gd). Visual is the standing tree (pivots to fall); Notch is a Decal (projected texture) that grows with each hit; Stump appears once it falls. Set size / variant_b per tree in the Inspector."
+script = ExtResource("1_tree")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+shape = SubResource("TrunkShape")
+
+[node name="Visual" type="Node3D" parent="."]
+
+[node name="Mesh" type="MeshInstance3D" parent="Visual"]
+mesh = ExtResource("2_pine")
+
+[node name="Notch" type="Decal" parent="."]
+visible = false
+upper_fade = 0.0
+lower_fade = 0.0
+normal_fade = 0.5
+
+[node name="Stump" type="Node3D" parent="."]
+visible = false
+
+[node name="Bark" type="MeshInstance3D" parent="Stump"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+mesh = SubResource("StumpMesh")
+
+[node name="CutFace" type="MeshInstance3D" parent="Stump"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.505, 0)
+mesh = SubResource("CutFaceMesh")

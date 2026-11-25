@@ -1,0 +1,100 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://targets/straw_dummy.gd" id="1_dummy"]
+
+[sub_resource type="CapsuleShape3D" id="DummyShape"]
+radius = 0.3
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="Wood"]
+albedo_color = Color(0.36, 0.25, 0.16, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="Straw"]
+albedo_color = Color(0.86, 0.74, 0.4, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Burlap"]
+albedo_color = Color(0.66, 0.56, 0.4, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Rope"]
+albedo_color = Color(0.42, 0.33, 0.22, 1)
+roughness = 1.0
+
+[sub_resource type="CylinderMesh" id="PostMesh"]
+material = SubResource("Wood")
+top_radius = 0.045
+bottom_radius = 0.055
+height = 1.7
+
+[sub_resource type="BoxMesh" id="BoardX"]
+material = SubResource("Wood")
+size = Vector3(0.75, 0.07, 0.12)
+
+[sub_resource type="BoxMesh" id="BoardZ"]
+material = SubResource("Wood")
+size = Vector3(0.12, 0.07, 0.75)
+
+[sub_resource type="CapsuleMesh" id="TorsoMesh"]
+material = SubResource("Straw")
+radius = 0.24
+height = 0.85
+
+[sub_resource type="BoxMesh" id="ArmsMesh"]
+material = SubResource("Straw")
+size = Vector3(1.0, 0.13, 0.13)
+
+[sub_resource type="CylinderMesh" id="RopeMesh"]
+material = SubResource("Rope")
+top_radius = 0.25
+bottom_radius = 0.25
+height = 0.04
+
+[sub_resource type="SphereMesh" id="HeadMesh"]
+material = SubResource("Burlap")
+radius = 0.16
+height = 0.32
+
+[node name="StrawDummy" type="StaticBody3D"]
+editor_description = "Training dummy (targets/straw_dummy.gd). Body is the pivot that leans and wobbles when hit; Torso and Arms get a per-dummy straw material that browns with damage."
+script = ExtResource("1_dummy")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("DummyShape")
+
+[node name="Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+mesh = SubResource("PostMesh")
+
+[node name="BaseX" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, 0)
+mesh = SubResource("BoardX")
+
+[node name="BaseZ" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, 0)
+mesh = SubResource("BoardZ")
+
+[node name="Body" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+
+[node name="Torso" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+mesh = SubResource("TorsoMesh")
+
+[node name="Arms" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+mesh = SubResource("ArmsMesh")
+
+[node name="WaistRope" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+mesh = SubResource("RopeMesh")
+
+[node name="NeckRope" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+mesh = SubResource("RopeMesh")
+
+[node name="Head" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.76, 0)
+mesh = SubResource("HeadMesh")

@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/models/shrub_03/shrub_03_a.res" id="1_2iyhf"]
+
+[node name="shrub_03_a" type="MeshInstance3D" unique_id=1343054787]
+mesh = ExtResource("1_2iyhf")

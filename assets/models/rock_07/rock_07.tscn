@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/models/rock_07/rock_07.res" id="1_s8uq3"]
+
+[node name="rock_07" type="MeshInstance3D" unique_id=2033774920]
+mesh = ExtResource("1_s8uq3")

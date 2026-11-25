@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/models/fern_02/fern_02_c.res" id="1_s5il3"]
+
+[node name="fern_02_c" type="MeshInstance3D" unique_id=1762769559]
+mesh = ExtResource("1_s5il3")

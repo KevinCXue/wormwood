@@ -1,0 +1,11 @@
+# Godot's editor cache: imported textures, shader cache, editor state.
+# Rebuilt automatically from the source files when the project is opened.
+.godot/
+
+# Godot export output / Android build template
+/build/
+/android/
+
+# OS junk
+.DS_Store
+Thumbs.db

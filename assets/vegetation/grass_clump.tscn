@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/vegetation/grass_clump.res" id="1_i1gv4"]
+
+[node name="grass_clump" type="MeshInstance3D" unique_id=1385314181]
+mesh = ExtResource("1_i1gv4")

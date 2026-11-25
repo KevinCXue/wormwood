@@ -1,0 +1,114 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://props/tables/picnic_table.tscn" id="1_3klln"]
+[ext_resource type="PackedScene" path="res://props/tables/market_table.tscn" id="2_o88al"]
+[ext_resource type="PackedScene" path="res://props/tables/small_table.tscn" id="3_o8rhl"]
+[ext_resource type="PackedScene" path="res://props/items/plate.tscn" id="4_wqyxy"]
+[ext_resource type="Script" path="res://item.gd" id="5_8qeqw"]
+[ext_resource type="PackedScene" path="res://props/items/goblet.tscn" id="6_kgekv"]
+[ext_resource type="PackedScene" path="res://props/items/apple.tscn" id="7_flx8j"]
+[ext_resource type="PackedScene" path="res://props/items/jug.tscn" id="8_l6pwm"]
+[ext_resource type="PackedScene" path="res://props/items/bowl.tscn" id="9_rv0sd"]
+[ext_resource type="PackedScene" path="res://props/items/candlestick.tscn" id="10_ivod6"]
+
+[node name="VillageProps" type="Node3D" unique_id=1161704903]
+
+[node name="PicnicTable" type="StaticBody3D" parent="." unique_id=1330017196 instance=ExtResource("1_3klln")]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, -5.5, 0, 3)
+
+[node name="MarketTable" type="StaticBody3D" parent="." unique_id=451324575 instance=ExtResource("2_o88al")]
+transform = Transform3D(0.9396926, 0, -0.34202012, 0, 1, 0, 0.34202012, 0, 0.9396926, 3.5, 0, 4)
+
+[node name="SmallTable" type="StaticBody3D" parent="." unique_id=926766951 instance=ExtResource("3_o8rhl")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6, 0, -1.6)
+
+[node name="Plate" type="RigidBody3D" parent="." unique_id=1099828295 instance=ExtResource("4_wqyxy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.6552916, 0.7557281, 2.4204445)
+mass = 0.4
+script = ExtResource("5_8qeqw")
+display_name = "Wooden Plate"
+
+[node name="Goblet" type="RigidBody3D" parent="." unique_id=10910934 instance=ExtResource("6_kgekv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.445698, 0.7557281, 2.6231031)
+mass = 0.35
+script = ExtResource("5_8qeqw")
+display_name = "Brass Goblet"
+
+[node name="Plate2" type="RigidBody3D" parent="." unique_id=1575374365 instance=ExtResource("4_wqyxy")]
+transform = Transform3D(0.76604444, 0, 0.6427876, 0, 1, 0, -0.6427876, 0, 0.76604444, -5.3447084, 0.7557281, 3.5795555)
+mass = 0.4
+script = ExtResource("5_8qeqw")
+display_name = "Wooden Plate"
+
+[node name="Apple" type="RigidBody3D" parent="." unique_id=1061168293 instance=ExtResource("7_flx8j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.291236, 0.7557281, 3.5859332)
+mass = 0.15
+script = ExtResource("5_8qeqw")
+display_name = "Apple"
+
+[node name="Jug" type="RigidBody3D" parent="." unique_id=2064949726 instance=ExtResource("8_l6pwm")]
+transform = Transform3D(0.34202015, 0, 0.9396926, 0, 1, 0, -0.9396926, 0, 0.34202015, -5.5353556, 0.7557281, 3.0612373)
+mass = 1.2
+script = ExtResource("5_8qeqw")
+display_name = "Clay Jug"
+
+[node name="Bowl" type="RigidBody3D" parent="." unique_id=299960613 instance=ExtResource("9_rv0sd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.290406, 0.7557281, 3.2026587)
+mass = 0.2
+script = ExtResource("5_8qeqw")
+display_name = "Wooden Bowl"
+
+[node name="Apple2" type="RigidBody3D" parent="." unique_id=1477583965 instance=ExtResource("7_flx8j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8080132, 0.9681443, 3.8545551)
+mass = 0.15
+script = ExtResource("5_8qeqw")
+display_name = "Apple"
+
+[node name="Apple3" type="RigidBody3D" parent="." unique_id=1203101219 instance=ExtResource("7_flx8j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9532855, 0.9681443, 3.7478032)
+mass = 0.15
+script = ExtResource("5_8qeqw")
+display_name = "Apple"
+
+[node name="Apple4" type="RigidBody3D" parent="." unique_id=1520070947 instance=ExtResource("7_flx8j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8465335, 0.9681443, 3.602531)
+mass = 0.15
+script = ExtResource("5_8qeqw")
+display_name = "Apple"
+
+[node name="Bowl2" type="RigidBody3D" parent="." unique_id=1989927766 instance=ExtResource("9_rv0sd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3120615, 0.9681443, 3.931596)
+mass = 0.2
+script = ExtResource("5_8qeqw")
+display_name = "Wooden Bowl"
+
+[node name="Goblet2" type="RigidBody3D" parent="." unique_id=827738591 instance=ExtResource("6_kgekv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.7306046, 0.9681443, 4.24356)
+mass = 0.35
+script = ExtResource("5_8qeqw")
+display_name = "Brass Goblet"
+
+[node name="Goblet3" type="RigidBody3D" parent="." unique_id=68317611 instance=ExtResource("6_kgekv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9570637, 0.9681443, 4.05994)
+mass = 0.35
+script = ExtResource("5_8qeqw")
+display_name = "Brass Goblet"
+
+[node name="Candlestick" type="RigidBody3D" parent="." unique_id=2121265808 instance=ExtResource("10_ivod6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.2987385, 0.9681443, 4.290717)
+mass = 0.5
+script = ExtResource("5_8qeqw")
+display_name = "Candlestick"
+
+[node name="Candlestick2" type="RigidBody3D" parent="." unique_id=1781100700 instance=ExtResource("10_ivod6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.35, 0.8094177, -1.6)
+mass = 0.5
+script = ExtResource("5_8qeqw")
+display_name = "Candlestick"
+
+[node name="Plate3" type="RigidBody3D" parent="." unique_id=1421998452 instance=ExtResource("4_wqyxy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.8, 0.8094177, -1.6)
+mass = 0.4
+script = ExtResource("5_8qeqw")
+display_name = "Wooden Plate"
+

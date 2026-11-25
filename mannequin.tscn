@@ -1,0 +1,180 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://mannequin.gd" id="1_mq"]
+
+[sub_resource type="StandardMaterial3D" id="Skin"]
+albedo_color = Color(0.78, 0.62, 0.5, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="Tunic"]
+albedo_color = Color(0.62, 0.16, 0.12, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Trousers"]
+albedo_color = Color(0.25, 0.2, 0.16, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="Boots"]
+albedo_color = Color(0.14, 0.1, 0.08, 1)
+roughness = 0.9
+
+[sub_resource type="CapsuleMesh" id="TorsoMesh"]
+material = SubResource("Tunic")
+radius = 0.17
+height = 0.62
+
+[sub_resource type="BoxMesh" id="PelvisMesh"]
+material = SubResource("Trousers")
+size = Vector3(0.32, 0.18, 0.21)
+
+[sub_resource type="SphereMesh" id="HeadMesh"]
+material = SubResource("Skin")
+radius = 0.11
+height = 0.25
+
+[sub_resource type="BoxMesh" id="NoseMesh"]
+material = SubResource("Skin")
+size = Vector3(0.035, 0.05, 0.05)
+
+[sub_resource type="CapsuleMesh" id="UpperArmMesh"]
+material = SubResource("Tunic")
+radius = 0.055
+height = 0.32
+
+[sub_resource type="CapsuleMesh" id="ForearmMesh"]
+material = SubResource("Skin")
+radius = 0.045
+height = 0.3
+
+[sub_resource type="SphereMesh" id="HandMesh"]
+material = SubResource("Skin")
+radius = 0.05
+height = 0.1
+
+[sub_resource type="CapsuleMesh" id="ThighMesh"]
+material = SubResource("Trousers")
+radius = 0.075
+height = 0.46
+
+[sub_resource type="CapsuleMesh" id="ShinMesh"]
+material = SubResource("Trousers")
+radius = 0.062
+height = 0.44
+
+[sub_resource type="BoxMesh" id="FootMesh"]
+material = SubResource("Boots")
+size = Vector3(0.11, 0.07, 0.25)
+
+[node name="Mannequin" type="Node3D"]
+editor_description = "Every mesh except the arms is on render layer 2, which the first-person camera hides (you still see your shadow). HandSocket (under ElbowR) holds carried items; HandSocketL (under ElbowL) holds the equipped weapon/tool. Greybox humanoid, 1.8 m, feet at the origin, facing -Z. Pivot nodes (Hips, Spine, ShoulderL/R, ElbowL/R, HipL/R, KneeL/R) act as joints; mannequin.gd rotates them to animate. Meshes are children of the pivots, offset so they hang from the joint."
+script = ExtResource("1_mq")
+
+[node name="Hips" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+
+[node name="Pelvis" type="MeshInstance3D" parent="Hips"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+layers = 2
+mesh = SubResource("PelvisMesh")
+
+[node name="Spine" type="Node3D" parent="Hips"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0)
+
+[node name="Torso" type="MeshInstance3D" parent="Hips/Spine"]
+transform = Transform3D(1.15, 0, 0, 0, 1, 0, 0, 0, 0.75, 0, 0.27, 0)
+layers = 2
+mesh = SubResource("TorsoMesh")
+
+[node name="Head" type="MeshInstance3D" parent="Hips/Spine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.64, 0)
+layers = 2
+mesh = SubResource("HeadMesh")
+
+[node name="Nose" type="MeshInstance3D" parent="Hips/Spine/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, -0.11)
+layers = 2
+mesh = SubResource("NoseMesh")
+
+[node name="ShoulderL" type="Node3D" parent="Hips/Spine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.23, 0.5, 0)
+
+[node name="UpperArm" type="MeshInstance3D" parent="Hips/Spine/ShoulderL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("UpperArmMesh")
+
+[node name="ElbowL" type="Node3D" parent="Hips/Spine/ShoulderL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.29, 0)
+
+[node name="Forearm" type="MeshInstance3D" parent="Hips/Spine/ShoulderL/ElbowL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13, 0)
+mesh = SubResource("ForearmMesh")
+
+[node name="Hand" type="MeshInstance3D" parent="Hips/Spine/ShoulderL/ElbowL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+mesh = SubResource("HandMesh")
+
+[node name="ShoulderR" type="Node3D" parent="Hips/Spine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.23, 0.5, 0)
+
+[node name="UpperArm" type="MeshInstance3D" parent="Hips/Spine/ShoulderR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("UpperArmMesh")
+
+[node name="ElbowR" type="Node3D" parent="Hips/Spine/ShoulderR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.29, 0)
+
+[node name="Forearm" type="MeshInstance3D" parent="Hips/Spine/ShoulderR/ElbowR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13, 0)
+mesh = SubResource("ForearmMesh")
+
+[node name="Hand" type="MeshInstance3D" parent="Hips/Spine/ShoulderR/ElbowR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+mesh = SubResource("HandMesh")
+
+[node name="HipL" type="Node3D" parent="Hips"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, -0.02, 0)
+
+[node name="Thigh" type="MeshInstance3D" parent="Hips/HipL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0)
+layers = 2
+mesh = SubResource("ThighMesh")
+
+[node name="KneeL" type="Node3D" parent="Hips/HipL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.44, 0)
+
+[node name="Shin" type="MeshInstance3D" parent="Hips/HipL/KneeL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0)
+layers = 2
+mesh = SubResource("ShinMesh")
+
+[node name="Foot" type="MeshInstance3D" parent="Hips/HipL/KneeL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.455, -0.05)
+layers = 2
+mesh = SubResource("FootMesh")
+
+[node name="HipR" type="Node3D" parent="Hips"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, -0.02, 0)
+
+[node name="Thigh" type="MeshInstance3D" parent="Hips/HipR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0)
+layers = 2
+mesh = SubResource("ThighMesh")
+
+[node name="KneeR" type="Node3D" parent="Hips/HipR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.44, 0)
+
+[node name="Shin" type="MeshInstance3D" parent="Hips/HipR/KneeR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0)
+layers = 2
+mesh = SubResource("ShinMesh")
+
+[node name="Foot" type="MeshInstance3D" parent="Hips/HipR/KneeR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.455, -0.05)
+layers = 2
+mesh = SubResource("FootMesh")
+
+[node name="HandSocket" type="Node3D" parent="Hips/Spine/ShoulderR/ElbowR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+
+[node name="HandSocketL" type="Node3D" parent="Hips/Spine/ShoulderL/ElbowL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
