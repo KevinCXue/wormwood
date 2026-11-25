@@ -25,13 +25,18 @@ extends CharacterBody3D
 @export var trousers_color := Color(0.25, 0.2, 0.16)
 @export var boots_color := Color(0.14, 0.1, 0.08)
 @export var hair_color := Color(0.25, 0.16, 0.1)
-@export_enum("short", "long") var hair_style := "short"
+@export_enum("short", "long", "buzzed") var hair_style := "short"
+@export var beard := false
+@export var hood := false  # ranger outfit only
 @export var skirt := false
 @export_range(0.8, 1.2) var height_scale := 1.0
 
 @export_group("Behaviour")
 @export var notice_range := 7.0  # metres: closer than this and they watch you
 @export var turn_speed := 4.0    # how quickly head and body turn
+## The animation they stand around with. "Idle_Talking" gestures as if mid
+## conversation: put two villagers face to face and they chat.
+@export_enum("Idle", "Idle_Talking") var idle_animation := "Idle"
 
 const ATTENTION_TIME := 6.0 # seconds they keep facing you after you talk
 
@@ -41,6 +46,7 @@ var _player: Node3D = null
 var _line := 0
 var _home_yaw := 0.0       # the way the model faced when the game started
 var _attention := 0.0      # seconds left of turning to face the player
+var _grounded := false     # snapped down onto the ground yet?
 
 
 func _ready() -> void:
@@ -50,7 +56,7 @@ func _ready() -> void:
 		"body_type": body_type, "outfit": outfit, "height_scale": height_scale,
 		"skin": skin_color, "tunic": tunic_color, "trousers": trousers_color,
 		"boots": boots_color, "hair": hair_color, "hair_style": hair_style,
-		"skirt": skirt,
+		"skirt": skirt, "beard": beard, "hood": hood, "idle": idle_animation,
 	})
 	# The player adds itself to the "player" group (player.gd). Looking it up
 	# by group means this scene doesn't need a hard-coded path to the player.
@@ -67,6 +73,8 @@ func talk() -> String:
 
 
 func _physics_process(delta: float) -> void:
+	if not _grounded:
+		_snap_to_ground()
 	# Standing still: speed 0 gives the idle pose with its slow breathing.
 	_model.update_pose(0.0, true, delta)
 	var k := 1.0 - exp(-turn_speed * delta)
@@ -90,6 +98,20 @@ func _physics_process(delta: float) -> void:
 	# Head: watch the player while they're nearby. (The body works out how
 	# far the neck can turn.)
 	_model.set_look_target(_player.global_position + Vector3.UP * 1.6 if near else null)
+
+
+## Villagers don't fall under gravity (they don't move yet), so place them on
+## whatever is below: terrain, a plaza, a building's floor. Cast a ray
+## straight down from a little above; the terrain's collision may take a
+## frame or two to exist, so keep trying until something is hit.
+func _snap_to_ground() -> void:
+	var from := global_position + Vector3.UP * 3.0
+	var query := PhysicsRayQueryParameters3D.create(from, from + Vector3.DOWN * 12.0)
+	query.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if not hit.is_empty():
+		global_position.y = hit.position.y
+		_grounded = true
 
 
 ## The Y rotation at which a node's forward (-Z) points along `dir`.

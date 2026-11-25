@@ -22,9 +22,9 @@ extends SceneTree
 ##   res://assets/vegetation/*   generated grass and pine meshes
 ##   res://assets/models/*/*_x.tscn  single-variant scenes cut from Poly Haven sets
 
-const SEED := 1337
+const SEED := WorldShape.SEED
 const WORLD_HALF := 256       # terrain spans -256..256 m on X and Z
-const CLEARING_RADIUS := 28.0 # flat village area around the origin
+const CLEARING_RADIUS := WorldShape.CLEARING_RADIUS
 const TERRAIN_DIR := "res://terrain"
 const DATA_DIR := "res://terrain/data"
 const VEG_DIR := "res://assets/vegetation"
@@ -44,9 +44,7 @@ const KEEP_CLEAR := [
 ]
 
 var rng := RandomNumberGenerator.new()
-var hills := FastNoiseLite.new()
-var detail := FastNoiseLite.new()
-var ridges := FastNoiseLite.new()
+var shape := WorldShape.new()  # the land's heights (tools/world_shape.gd)
 var forest := FastNoiseLite.new()
 var meadow := FastNoiseLite.new()
 var terrain: Terrain3D
@@ -114,32 +112,17 @@ func _initialize() -> void:
 # --- Heights ------------------------------------------------------------------
 
 func _setup_noise() -> void:
-	# FastNoiseLite gives smooth pseudo-random values in -1..1. Frequency is
-	# "features per metre"; fractal octaves layer finer detail on top.
-	hills.seed = SEED
-	hills.frequency = 0.008
-	hills.fractal_octaves = 4
-	detail.seed = SEED + 1
-	detail.frequency = 0.05
-	ridges.seed = SEED + 2
-	ridges.frequency = 0.006
-	ridges.fractal_type = FastNoiseLite.FRACTAL_RIDGED  # sharp mountain crests
-	ridges.fractal_octaves = 5
+	# FastNoiseLite gives smooth pseudo-random values in -1..1. (The height
+	# noise lives in tools/world_shape.gd.)
 	forest.seed = SEED + 3
 	forest.frequency = 0.012
 	meadow.seed = SEED + 4
 	meadow.frequency = 0.03
 
 
-## Height of the ground at a world position, in metres.
-## A flat clearing in the middle, rolling hills around it and a ring of
-## mountains near the edge, so the world feels like a valley.
+## Height of the ground at a world position, in metres (tools/world_shape.gd).
 func height_at(x: float, z: float) -> float:
-	var r := Vector2(x, z).length()
-	var rolling := (hills.get_noise_2d(x, z) * 0.5 + 0.5) * 16.0 + detail.get_noise_2d(x, z) * 1.2
-	var settle := smoothstep(CLEARING_RADIUS, CLEARING_RADIUS + 50.0, r)  # 0 inside the clearing
-	var mountains := (ridges.get_noise_2d(x, z) * 0.5 + 0.5) * 110.0 * smoothstep(130.0, 240.0, r)
-	return rolling * settle + mountains
+	return shape.height_at(x, z)
 
 
 func _import_heights() -> void:

@@ -7,8 +7,10 @@ as a way to learn game development. "Wormwood" is a working codename.
 
 ## What works so far
 
-- Forested terrain with a clearing, a two-storey house you can walk through,
-  and a day/night cycle.
+- A town of 30 villagers you can talk to: families, traders and a mayor
+  around a town square, a market, a town hall, and a church on the hill.
+- Forested hills, a two-storey house you can walk through, and a day/night
+  cycle.
 - First- and third-person camera.
 - Pick up and drop items: plates, goblets, apples, lanterns and more.
 - Equip a sword or an axe and swing it. Chop down trees with the axe; knock
@@ -46,8 +48,10 @@ Planned: a village, NPCs, quests, an inventory and other RPG systems.
   equipping them and hitting things.
 - `targets/`: things you can hit (trees, dummies).
 - `props/`, `assets/`, `terrain/`: scenes, models and world data.
-- `tools/`: scripts that generate the terrain, props and house. See the
-  header comment in each for how to run it.
+- `village/`: the town layout (roads, plazas, buildings, villagers);
+  `npcs/`: villagers; `buildings/`: generated building scenes.
+- `tools/`: scripts that generate the terrain, props, buildings and the
+  town. See the header comment in each for how to run it.
 
 ## Graphics settings
 

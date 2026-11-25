@@ -244,6 +244,14 @@ func apply_look(look: Dictionary) -> void:
 	if outfit == "peasant" and look.has("tunic"):
 		_dye(look["tunic"])
 	_set_hair(look.get("hair_style", "short"), look.get("hair", Color(0.22, 0.14, 0.09)))
+	if look.get("beard", false) and _body_type == "male":
+		_add_hair_mesh("Hair_Beard", look.get("hair", Color(0.22, 0.14, 0.09)))
+	if look.has("idle"):
+		var idle: AnimationNodeAnimation = (_tree.tree_root as AnimationNodeBlendTree).get_node("move").get_blend_point_node(0)
+		idle.animation = look["idle"]
+	# Start each character at a different point in its animations, so a
+	# crowd doesn't breathe and gesture in lockstep.
+	_tree.advance(randf() * 3.0)
 
 
 # --- Building -------------------------------------------------------------------------
@@ -563,11 +571,15 @@ func _set_hair(style: String, colour: Color) -> void:
 		_hair.free()
 		_hair = null
 	var styles: Dictionary = HAIR[_body_type]
-	if not styles.has(style):
-		return
-	# Each hairstyle file contains the same skeleton plus a hair mesh skinned
-	# to its head bone. Take just the mesh and bind it to our skeleton.
-	var scene: Node = load(HAIR_DIR + styles[style] + ".gltf").instantiate()
+	if styles.has(style):
+		_hair = _add_hair_mesh(styles[style], colour)
+
+
+## Each hair file (hairstyles, the beard) contains the same skeleton plus a
+## mesh skinned to its head bone. Take just the mesh, bind it to our skeleton
+## and tint it (the texture is a neutral colour meant to be multiplied).
+func _add_hair_mesh(file: String, colour: Color) -> MeshInstance3D:
+	var scene: Node = load(HAIR_DIR + file + ".gltf").instantiate()
 	var mesh: MeshInstance3D = scene.find_children("*", "MeshInstance3D", true, false)[0]
 	mesh.owner = null
 	mesh.get_parent().remove_child(mesh)
@@ -575,11 +587,10 @@ func _set_hair(style: String, colour: Color) -> void:
 	_skeleton.add_child(mesh)
 	mesh.skeleton = NodePath("..")
 	mesh.layers = 2 if _is_player else 1
-	# Tint the hair texture (multiplies its colours).
 	var mat := (mesh.get_active_material(0) as StandardMaterial3D).duplicate() as StandardMaterial3D
 	mat.albedo_color = colour.lightened(0.35)
 	mesh.set_surface_override_material(0, mat)
-	_hair = mesh
+	return mesh
 
 
 ## The eyebrows share the hair texture, which is a neutral grey-brown meant to

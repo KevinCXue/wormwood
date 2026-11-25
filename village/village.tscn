@@ -1,85 +1,713 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://village/road.gd" id="1_r3kn4"]
-[ext_resource type="PackedScene" path="res://buildings/cottage_a.tscn" id="2_72808"]
-[ext_resource type="PackedScene" path="res://buildings/cottage_b.tscn" id="3_hqfy6"]
-[ext_resource type="PackedScene" path="res://npcs/npc.tscn" id="4_sn5h1"]
-[ext_resource type="Script" path="res://npcs/npc.gd" id="5_feg5c"]
+[ext_resource type="Script" path="res://village/road.gd" id="1_37gko"]
+[ext_resource type="Script" path="res://village/plaza.gd" id="2_naskv"]
+[ext_resource type="PackedScene" path="res://buildings/well.tscn" id="3_nbqfx"]
+[ext_resource type="PackedScene" path="res://buildings/stall_red.tscn" id="4_yu71o"]
+[ext_resource type="PackedScene" path="res://buildings/stall_blue.tscn" id="5_d82yj"]
+[ext_resource type="PackedScene" path="res://buildings/stall_green.tscn" id="6_w6cbh"]
+[ext_resource type="PackedScene" path="res://buildings/town_hall.tscn" id="7_ccv6e"]
+[ext_resource type="PackedScene" path="res://buildings/church.tscn" id="8_h606f"]
+[ext_resource type="PackedScene" path="res://buildings/cottage_a.tscn" id="9_iqnor"]
+[ext_resource type="PackedScene" path="res://buildings/cottage_b.tscn" id="10_markx"]
+[ext_resource type="PackedScene" path="res://buildings/house_a.tscn" id="11_5r634"]
+[ext_resource type="PackedScene" path="res://buildings/house_b.tscn" id="12_jwmop"]
+[ext_resource type="PackedScene" path="res://npcs/npc.tscn" id="13_2ol3x"]
+[ext_resource type="Script" path="res://npcs/npc.gd" id="14_m6886"]
 
-[sub_resource type="Curve3D" id="Curve3D_jxqum"]
+[sub_resource type="Curve3D" id="Curve3D_c843x"]
+bake_interval = 0.5
 _data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0.5, 0, -1, 0.22000001, 0, -3.8, -0.22000001, 0, 3.8, 0.8, 0, 8, 0.22000001, 0, -4, -0.22000001, 0, 4, -0.6, 0, 18, -0.42, 0, -4.4, 0.42, 0, 4.4, -0.3, 0, 28, -0.8600001, 0, -5.4, 0.8600001, 0, 5.4, 1.5, 0, 40, -0.90000004, 0, -6.4, 0.90000004, 0, 6.4, 4, 0, 55, 0, 0, 0, 0, 0, 0, 6, 0, 72),
-"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0)
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0.5, 0, -1, 0.22000001, -0.020000001, -3.8, -0.22000001, 0.020000001, 3.8, 0.8, 0, 8, 0.22000001, -0.16000001, -3.8, -0.22000001, 0.16000001, 3.8, -0.6, 0.1, 18, -0.42, -0.17999999, -3.8, 0.42, 0.17999999, 3.8, -0.3, 0.8, 27, -0.62, -0.04, -3.8, 0.62, 0.04, 3.8, 1.5, 1, 37, -0.42, -0.28000003, -3, 0.42, 0.28000003, 3, 2.8, 1, 46, -0.27999997, -0.56, -2.4, 0.27999997, 0.56, 2.4, 3.6, 2.4, 52, -0.32, -0.64, -2.8, 0.32, 0.64, 2.8, 4.2, 3.8, 58, -0.36000004, -0.68, -3.2, 0.36000004, 0.68, 3.2, 5.2, 5.6, 66, -0.36000004, -0.48000002, -3.2, 0.36000004, 0.48000002, 3.2, 6, 7.2, 74, 0, 0, 0, 0, 0, 0, 7, 8, 82),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 }
-point_count = 7
+point_count = 11
 
-[sub_resource type="Curve3D" id="Curve3D_pa48w"]
+[sub_resource type="Curve3D" id="Curve3D_vfyxc"]
+bake_interval = 0.5
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0.5, 0, -1, 1.9399999, 0, 0.54, -1.9399999, 0, -0.54, -5, 0, -2.6, 1.2, 0, 0.56000006, -1.2, 0, -0.56000006, -9.2, 0, -3.7, 0, 0, 0, 0, 0, 0, -11, 0, -5.4),
 "tilts": PackedFloat32Array(0, 0, 0, 0)
 }
 point_count = 4
 
-[sub_resource type="Curve3D" id="Curve3D_52jqx"]
+[sub_resource type="Curve3D" id="Curve3D_r2juj"]
+bake_interval = 0.5
 _data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -0.6, 0, 16, 1.1, 0, 0, -1.1, 0, 0, -3.5, 0, 16, 0, 0, 0, 0, 0, 0, -6.1, 0, 16),
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -9, 1, 37, 4.6, -0.17999999, 0.2, -4.6, 0.17999999, -0.2, -23, 1, 37, 3.8, -0.6, 0.5, -3.8, 0.6, -0.5, -32, 1.9, 36, 4.4, -0.94, 0.8, -4.4, 0.94, -0.8, -42, 4, 34.5, 0, 0, 0, 0, 0, 0, -54, 6.6, 32),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0)
+}
+point_count = 5
+
+[sub_resource type="Curve3D" id="Curve3D_r21ja"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 12.5, 1, 44.5, -2.9, -0.48000002, 0.05999985, 2.9, 0.48000002, -0.05999985, 20, 1.9, 45, -2.6000001, -0.65999997, 0.3199997, 2.6000001, 0.65999997, -0.3199997, 27, 3.4, 44.2, -2.3, -0.71999997, 0.2, 2.3, 0.71999997, -0.2, 33, 5.2, 43.4, -1.9, -0.6800001, -0.1199997, 1.9, 0.6800001, 0.1199997, 38.5, 7, 43.2, -1.1, -0.43999997, -0.44000015, 1.1, 0.43999997, 0.44000015, 42.5, 8.6, 44, 0, 0, 0, 0, 0, 0, 44, 9.2, 45.4),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 7
+
+[sub_resource type="Curve3D" id="Curve3D_mx37h"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0.7, 0, 10, -4.66, -0.040000003, -0.5, 4.66, 0.040000003, 0.5, 12, 0, 11.5, -4.2000003, -0.17999999, -0.33999997, 4.2000003, 0.17999999, 0.33999997, 24, 0.2, 12.5, -2.8, -0.28, -0.17999993, 2.8, 0.28, 0.17999993, 33, 0.9, 13.2, 0, 0, 0, 0, 0, 0, 38, 1.6, 13.4),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0)
+}
+point_count = 5
+
+[sub_resource type="Curve3D" id="Curve3D_kpq2u"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -5.6, 0, 16, -1, 0, 0, 1, 0, 0, -3.1, 0, 16, 0, 0, 0, 0, 0, 0, -0.6, 0, 16),
 "tilts": PackedFloat32Array(0, 0, 0)
 }
 point_count = 3
 
-[sub_resource type="Curve3D" id="Curve3D_cyjsm"]
+[sub_resource type="Curve3D" id="Curve3D_c7g21"]
+bake_interval = 0.5
 _data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -0.5, 0, 22, -1.48, 0, 0, 1.48, 0, 0, 3.5, 0, 22, 0, 0, 0, 0, 0, 0, 6.9, 0, 22),
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 6.6, 0, 22, 1.42, 0, 0, -1.42, 0, 0, 3.05, 0, 22, 0, 0, 0, 0, 0, 0, -0.5, 0, 22),
 "tilts": PackedFloat32Array(0, 0, 0)
 }
 point_count = 3
 
-[node name="Village" type="Node3D" unique_id=254337533]
-editor_description = "Roads, cottages and villagers. Edit freely, then re-run tools/build_village.gd so the terrain (dirt paint, cleared grass and trees) matches."
+[sub_resource type="Curve3D" id="Curve3D_rfbtf"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -32.2, 1.6, 31.4, 0, -0.05999999, -0.87999994, 0, 0.05999999, 0.87999994, -32.2, 1.75, 33.6, 0, 0, 0, 0, 0, 0, -32.2, 1.9, 35.8),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
 
-[node name="Roads" type="Node3D" parent="." unique_id=1654037875]
+[sub_resource type="Curve3D" id="Curve3D_ppafc"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -46.2, 4.4, 29.4, 0, -0.1, -0.86000025, 0, 0.1, 0.86000025, -46.2, 4.65, 31.55, 0, 0, 0, 0, 0, 0, -46.2, 4.9, 33.7),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
 
-[node name="MainStreet" type="Path3D" parent="Roads" unique_id=1875612462]
-curve = SubResource("Curve3D_jxqum")
-script = ExtResource("1_r3kn4")
+[sub_resource type="Curve3D" id="Curve3D_g57b6"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -32.8, 2.8, 40.6, 0, 0.17999999, 0.8799996, 0, -0.17999999, -0.8799996, -32.8, 2.35, 38.4, 0, 0, 0, 0, 0, 0, -32.8, 1.9, 36.2),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
+[sub_resource type="Curve3D" id="Curve3D_t6vi1"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -46.8, 5.8, 37.6, 0, 0.16000004, 0.8, 0, -0.16000004, -0.8, -46.8, 5.4, 35.6, 0, 0, 0, 0, 0, 0, -46.8, 5, 33.6),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
+[sub_resource type="Curve3D" id="Curve3D_5leeh"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -3.6, 4, 56.2, -1.5, 0.14000002, 0, 1.5, -0.14000002, 0, 0.1500001, 3.65, 56.2, 0, 0, 0, 0, 0, 0, 3.9, 3.3, 56.2),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
+[sub_resource type="Curve3D" id="Curve3D_0r6tc"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 8.6, 5, 58.8, 0.8400001, 0.16000004, 0, -0.8400001, -0.16000004, 0, 6.5, 4.6, 58.8, 0, 0, 0, 0, 0, 0, 4.4, 4.2, 58.8),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
+[sub_resource type="Curve3D" id="Curve3D_nfar0"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -3.1, 6.4, 68, -1.7, 0.08000002, 0, 1.7, -0.08000002, 0, 1.1500001, 6.2, 68, 0, 0, 0, 0, 0, 0, 5.4, 6, 68),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
+[sub_resource type="Curve3D" id="Curve3D_1c7wd"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 22.199999, 0.3, 15.6, -3.8146973e-07, 0.020000001, 0.6, 3.8146973e-07, -0.020000001, -0.6, 22.2, 0.25, 14.1, 0, 0, 0, 0, 0, 0, 22.2, 0.2, 12.6),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
+[sub_resource type="Curve3D" id="Curve3D_l8i38"]
+bake_interval = 0.5
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 34.7, 1.2, 15.6, 0, 0.04000001, 0.46000004, 0, -0.04000001, -0.46000004, 34.7, 1.1, 14.450001, 0, 0, 0, 0, 0, 0, 34.7, 1, 13.3),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
+[node name="Village" type="Node3D" unique_id=1034230386]
+editor_description = "Roads, plazas, buildings and villagers. Edit freely, then re-run tools/build_village.gd so the terrain (heights, dirt and paving, cleared grass and trees) matches."
+
+[node name="Roads" type="Node3D" parent="." unique_id=1243671394]
+
+[node name="MainStreet" type="Path3D" parent="Roads" unique_id=1654474698]
+curve = SubResource("Curve3D_c843x")
+script = ExtResource("1_37gko")
 width = 3.2
 
-[node name="HousePath" type="Path3D" parent="Roads" unique_id=1364737732]
-curve = SubResource("Curve3D_pa48w")
-script = ExtResource("1_r3kn4")
+[node name="HousePath" type="Path3D" parent="Roads" unique_id=973459651]
+curve = SubResource("Curve3D_vfyxc")
+script = ExtResource("1_37gko")
 width = 2.2
 
-[node name="MiraPath" type="Path3D" parent="Roads" unique_id=1793922633]
-curve = SubResource("Curve3D_52jqx")
-script = ExtResource("1_r3kn4")
+[node name="WestStreet" type="Path3D" parent="Roads" unique_id=1993977520]
+curve = SubResource("Curve3D_r2juj")
+script = ExtResource("1_37gko")
+width = 2.8
+
+[node name="ChurchRoad" type="Path3D" parent="Roads" unique_id=1161181360]
+curve = SubResource("Curve3D_r21ja")
+script = ExtResource("1_37gko")
+width = 2.4
+
+[node name="NorthEastLane" type="Path3D" parent="Roads" unique_id=1521047193]
+curve = SubResource("Curve3D_mx37h")
+script = ExtResource("1_37gko")
+width = 2.4
+
+[node name="MiraCottagePath" type="Path3D" parent="Roads" unique_id=2145050011]
+curve = SubResource("Curve3D_kpq2u")
+script = ExtResource("1_37gko")
 width = 1.6
 
-[node name="TobinPath" type="Path3D" parent="Roads" unique_id=1029510966]
-curve = SubResource("Curve3D_cyjsm")
-script = ExtResource("1_r3kn4")
+[node name="TobinCottagePath" type="Path3D" parent="Roads" unique_id=77787596]
+curve = SubResource("Curve3D_c7g21")
+script = ExtResource("1_37gko")
 width = 1.6
 
-[node name="Buildings" type="Node3D" parent="." unique_id=1200952183]
+[node name="BakerHousePath" type="Path3D" parent="Roads" unique_id=540503517]
+curve = SubResource("Curve3D_rfbtf")
+script = ExtResource("1_37gko")
+width = 1.6
 
-[node name="MiraCottage" type="Node3D" parent="Buildings" unique_id=1975790124 instance=ExtResource("2_72808")]
-editor_description = "Generated by tools/build_cottages.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to clear."
+[node name="PenhallowHousePath" type="Path3D" parent="Roads" unique_id=2022417674]
+curve = SubResource("Curve3D_ppafc")
+script = ExtResource("1_37gko")
+width = 1.6
+
+[node name="OttilieHousePath" type="Path3D" parent="Roads" unique_id=693580222]
+curve = SubResource("Curve3D_g57b6")
+script = ExtResource("1_37gko")
+width = 1.6
+
+[node name="GuardHousePath" type="Path3D" parent="Roads" unique_id=847773348]
+curve = SubResource("Curve3D_t6vi1")
+script = ExtResource("1_37gko")
+width = 1.6
+
+[node name="SmithHousePath" type="Path3D" parent="Roads" unique_id=2080484529]
+curve = SubResource("Curve3D_5leeh")
+script = ExtResource("1_37gko")
+width = 1.6
+
+[node name="FarmHousePath" type="Path3D" parent="Roads" unique_id=1605209342]
+curve = SubResource("Curve3D_0r6tc")
+script = ExtResource("1_37gko")
+width = 1.6
+
+[node name="HerbalistCottagePath" type="Path3D" parent="Roads" unique_id=530472559]
+curve = SubResource("Curve3D_nfar0")
+script = ExtResource("1_37gko")
+width = 1.6
+
+[node name="HunterHousePath" type="Path3D" parent="Roads" unique_id=946980880]
+curve = SubResource("Curve3D_1c7wd")
+script = ExtResource("1_37gko")
+width = 1.6
+
+[node name="CarpenterHousePath" type="Path3D" parent="Roads" unique_id=1131560966]
+curve = SubResource("Curve3D_l8i38")
+script = ExtResource("1_37gko")
+width = 1.6
+
+[node name="Plazas" type="Node3D" parent="." unique_id=333443392]
+
+[node name="TownSquare" type="Node3D" parent="Plazas" unique_id=27928186]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 37)
+script = ExtResource("2_naskv")
+size = Vector2(22, 18)
+
+[node name="Market" type="Node3D" parent="Plazas" unique_id=728801595]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 1, 37)
+script = ExtResource("2_naskv")
+size = Vector2(14, 16)
+
+[node name="Buildings" type="Node3D" parent="." unique_id=1252954723]
+
+[node name="Well" type="Node3D" parent="Buildings" unique_id=1700850918 instance=ExtResource("3_nbqfx")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1, 40)
+metadata/footprint = Vector2(2.6, 2.6)
+
+[node name="StallNorth1" type="Node3D" parent="Buildings" unique_id=1437940136 instance=ExtResource("4_yu71o")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 1, 30.8)
+metadata/footprint = Vector2(2.6, 1.6)
+
+[node name="StallSouth1" type="Node3D" parent="Buildings" unique_id=1138528585 instance=ExtResource("5_d82yj")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -20.5, 1, 43.2)
+metadata/footprint = Vector2(2.6, 1.6)
+
+[node name="StallNorth2" type="Node3D" parent="Buildings" unique_id=1721806800 instance=ExtResource("5_d82yj")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 1, 30.8)
+metadata/footprint = Vector2(2.6, 1.6)
+
+[node name="StallSouth2" type="Node3D" parent="Buildings" unique_id=325310941 instance=ExtResource("6_w6cbh")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -16, 1, 43.2)
+metadata/footprint = Vector2(2.6, 1.6)
+
+[node name="StallNorth3" type="Node3D" parent="Buildings" unique_id=1963649681 instance=ExtResource("6_w6cbh")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.5, 1, 30.8)
+metadata/footprint = Vector2(2.6, 1.6)
+
+[node name="StallSouth3" type="Node3D" parent="Buildings" unique_id=1379041937 instance=ExtResource("4_yu71o")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -11.5, 1, 43.2)
+metadata/footprint = Vector2(2.6, 1.6)
+
+[node name="TownHall" type="Node3D" parent="Buildings" unique_id=2068455292 instance=ExtResource("7_ccv6e")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 21.5, 1.3, 36)
+metadata/footprint = Vector2(14, 12)
+
+[node name="Church" type="Node3D" parent="Buildings" unique_id=1427594327 instance=ExtResource("8_h606f")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 44, 9.2, 56)
+metadata/footprint = Vector2(8, 18.4)
+
+[node name="MiraCottage" type="Node3D" parent="Buildings" unique_id=512583116 instance=ExtResource("9_iqnor")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -9, 0, 16)
 metadata/footprint = Vector2(7, 6)
 
-[node name="TobinCottage" type="Node3D" parent="Buildings" unique_id=2005947349 instance=ExtResource("3_hqfy6")]
-editor_description = "Generated by tools/build_cottages.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to clear."
+[node name="TobinCottage" type="Node3D" parent="Buildings" unique_id=793233277 instance=ExtResource("10_markx")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 10, 0, 22)
 metadata/footprint = Vector2(7, 6)
 
-[node name="Villagers" type="Node3D" parent="." unique_id=1003412977]
+[node name="BakerHouse" type="Node3D" parent="Buildings" unique_id=1706618823 instance=ExtResource("11_5r634")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31, 1.6, 27.5)
+metadata/footprint = Vector2(9, 7)
 
-[node name="Mira" type="CharacterBody3D" parent="Villagers" unique_id=555857058 instance=ExtResource("4_sn5h1")]
+[node name="PenhallowHouse" type="Node3D" parent="Buildings" unique_id=44540454 instance=ExtResource("12_jwmop")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 4.4, 25.5)
+metadata/footprint = Vector2(9, 7)
+
+[node name="OttilieHouse" type="Node3D" parent="Buildings" unique_id=1016249504 instance=ExtResource("12_jwmop")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -34, 2.8, 44.5)
+metadata/footprint = Vector2(9, 7)
+
+[node name="GuardHouse" type="Node3D" parent="Buildings" unique_id=889700286 instance=ExtResource("11_5r634")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -48, 5.8, 41.5)
+metadata/footprint = Vector2(9, 7)
+
+[node name="SmithHouse" type="Node3D" parent="Buildings" unique_id=481239482 instance=ExtResource("11_5r634")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -7.5, 4, 55)
+metadata/footprint = Vector2(9, 7)
+
+[node name="FarmHouse" type="Node3D" parent="Buildings" unique_id=2069586510 instance=ExtResource("12_jwmop")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 12.5, 5, 60)
+metadata/footprint = Vector2(9, 7)
+
+[node name="HerbalistCottage" type="Node3D" parent="Buildings" unique_id=1801446538 instance=ExtResource("10_markx")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.5, 6.4, 68)
+metadata/footprint = Vector2(7, 6)
+
+[node name="HunterHouse" type="Node3D" parent="Buildings" unique_id=659866445 instance=ExtResource("11_5r634")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 21, 0.3, 19.5)
+metadata/footprint = Vector2(9, 7)
+
+[node name="CarpenterHouse" type="Node3D" parent="Buildings" unique_id=1039963797 instance=ExtResource("12_jwmop")]
+editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 33.5, 1.2, 19.5)
+metadata/footprint = Vector2(9, 7)
+
+[node name="Villagers" type="Node3D" parent="." unique_id=1650922660]
+
+[node name="Aldric" type="CharacterBody3D" parent="Villagers" unique_id=1532400985 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-0.08893198, 0, 0.9960377, 0, 1, 0, -0.9960377, 0, -0.08893198, 13.2, 1.1314448, 36)
+script = ExtResource("14_m6886")
+display_name = "Aldric"
+lines = PackedStringArray("Aldric Penhallow, mayor of this town, for my sins. Welcome.", "Thirty souls, a market and a church on the hill. Not bad for a clearing in the woods.", "If you\'re staying, the town could use a strong arm. Come and see me once you\'ve settled in.")
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.5, 0.16, 0.15, 1)
+hair_color = Color(0.62, 0.62, 0.62, 1)
+beard = true
+
+[node name="Corwin" type="CharacterBody3D" parent="Villagers" unique_id=436911563 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-0.016664373, 0, 0.9998611, 0, 1, 0, -0.9998611, 0, -0.016664373, 14, 1.163311, 39.8)
+script = ExtResource("14_m6886")
+display_name = "Corwin"
+lines = PackedStringArray("Move along. Or don\'t. Honestly, it\'s very quiet here.", "Father says guarding the hall builds character. It mostly builds boredom.")
+outfit = "ranger"
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.45, 0.4, 0.32, 1)
+hair_color = Color(0.35, 0.22, 0.13, 1)
+height_scale = 1.04
+
+[node name="Isolde" type="CharacterBody3D" parent="Villagers" unique_id=1287677157 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-0.44721267, 0, -0.89442766, 0, 1, 0, 0.89442766, 0, -0.44721267, -3, 0.97937083, 33)
+script = ExtResource("14_m6886")
+display_name = "Isolde"
+lines = PackedStringArray("Aldric works too hard. Someone has to make him eat.", "Elsbeth and I have been friends since before either of us could lift a bucket.")
+body_type = "female"
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.42, 0.27, 0.48, 1)
+hair_color = Color(0.78, 0.62, 0.38, 1)
+hair_style = "long"
+height_scale = 0.97
+idle_animation = "Idle_Talking"
+
+[node name="Elsbeth" type="CharacterBody3D" parent="Villagers" unique_id=387053457 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(0.4472127, 0, 0.89442766, 0, 1, 0, -0.89442766, 0, 0.4472127, -1.8, 0.98261595, 33.6)
+script = ExtResource("14_m6886")
+display_name = "Elsbeth"
+lines = PackedStringArray("Brannoc\'s forge is cold today. He says the iron\'s not right. He says that a lot.", "Isolde\'s telling me about the mayor\'s back again. Don\'t ask.")
+body_type = "female"
+skin_color = Color(0.5, 0.36, 0.27, 1)
+tunic_color = Color(0.6, 0.36, 0.2, 1)
+hair_color = Color(0.12, 0.09, 0.07, 1)
+height_scale = 0.98
+idle_animation = "Idle_Talking"
+
+[node name="Marguerite" type="CharacterBody3D" parent="Villagers" unique_id=853500481 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-0.9960377, 0, -0.08893184, 0, 1, 0, 0.08893184, 0, -0.9960377, 3.2, 1.0012972, 46.8)
+script = ExtResource("14_m6886")
+display_name = "Marguerite"
+lines = PackedStringArray("Captain Marguerite. If there\'s trouble on the south road, I see it first.", "Wolves in the hills this season. Keep that blade sharp.")
+body_type = "female"
+outfit = "ranger"
+skin_color = Color(0.74, 0.56, 0.43, 1)
+tunic_color = Color(0.45, 0.4, 0.32, 1)
+hair_color = Color(0.62, 0.25, 0.12, 1)
+hair_style = "buzzed"
+height_scale = 1.02
+
+[node name="Jory" type="CharacterBody3D" parent="Villagers" unique_id=1186846398 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(0.6585049, 0, 0.7525764, 0, 1, 0, -0.7525764, 0, 0.6585049, 8.6, 0.9954798, 41.4)
+script = ExtResource("14_m6886")
+display_name = "Jory"
+lines = PackedStringArray("Sit a while. Did I ever tell you about the winter the river froze solid?", "This well\'s older than the town. Older than me, even. Just.", "They say something under the old pines hums at night. I say there\'s ale under my bed.")
+skin_color = Color(0.74, 0.56, 0.43, 1)
+tunic_color = Color(0.5, 0.42, 0.32, 1)
+hair_color = Color(0.62, 0.62, 0.62, 1)
+hair_style = "buzzed"
+beard = true
+height_scale = 0.95
+
+[node name="Tamsin" type="CharacterBody3D" parent="Villagers" unique_id=1731580671 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(0.44721356, 0, -0.89442724, 0, 1, 0, 0.89442724, 0, 0.44721356, -5, 1, 40.5)
+script = ExtResource("14_m6886")
+display_name = "Tamsin"
+lines = PackedStringArray("A traveller, like you! I\'m here for the market and the gossip. Mostly the gossip.", "I\'m writing a song about this town. So far it rhymes \'well\' with \'well\'. Needs work.")
+body_type = "female"
+outfit = "ranger"
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.45, 0.4, 0.32, 1)
+hair_color = Color(0.78, 0.62, 0.38, 1)
+hair_style = "long"
+height_scale = 0.99
+
+[node name="Agnes" type="CharacterBody3D" parent="Villagers" unique_id=1699978870 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -20.5, 1.0032259, 29.6)
+script = ExtResource("14_m6886")
+display_name = "Agnes"
+lines = PackedStringArray("Fresh bread! Well. Bread. It was fresh this morning.", "Hamond bakes, I sell, and Lysa eats the profits.")
+body_type = "female"
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.74, 0.6, 0.26, 1)
+hair_color = Color(0.35, 0.22, 0.13, 1)
+height_scale = 0.97
+
+[node name="Ottilie" type="CharacterBody3D" parent="Villagers" unique_id=2139685558 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -16.6, 0.9998336, 29.6)
+script = ExtResource("14_m6886")
+display_name = "Ottilie"
+lines = PackedStringArray("Finest cloth this side of the mountains. Only cloth this side of the mountains, but still.", "Piers! Stop daydreaming and fold those.")
+body_type = "female"
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.2, 0.45, 0.45, 1)
+hair_color = Color(0.62, 0.62, 0.62, 1)
+hair_style = "long"
+height_scale = 0.95
+
+[node name="Piers" type="CharacterBody3D" parent="Villagers" unique_id=2064865314 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-0.9979253, 0, -0.06438225, 0, 1, 0, 0.06438225, 0, -0.9979253, -15, 0.99978495, 29.8)
+script = ExtResource("14_m6886")
+display_name = "Piers"
+lines = PackedStringArray("Mother says I\'ll run the stall one day. I\'d rather run away to sea. Is there a sea?", "Everyone wants blue. Nobody wants the green. Except Tobin.")
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.45, 0.55, 0.7, 1)
+hair_color = Color(0.78, 0.62, 0.38, 1)
+height_scale = 1.01
+
+[node name="Sabine" type="CharacterBody3D" parent="Villagers" unique_id=1633186421 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -11.5, 0.99990535, 29.6)
+script = ExtResource("14_m6886")
+display_name = "Sabine"
+lines = PackedStringArray("Herbs for what ails you. Mint for the belly, willow bark for the head, nothing for the heart.", "If you find blue-capped mushrooms in the forest, bring them to me. Don\'t eat them.")
+body_type = "female"
+skin_color = Color(0.5, 0.36, 0.27, 1)
+tunic_color = Color(0.42, 0.5, 0.34, 1)
+hair_color = Color(0.12, 0.09, 0.07, 1)
+hair_style = "long"
+
+[node name="Maud" type="CharacterBody3D" parent="Villagers" unique_id=1254403588 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 0.999671, 44.4)
+script = ExtResource("14_m6886")
+display_name = "Maud"
+lines = PackedStringArray("Turnips, onions, cabbages. Garrick grows them, I shout about them.", "Rain\'s coming. My knees never lie.")
+body_type = "female"
+skin_color = Color(0.74, 0.56, 0.43, 1)
+tunic_color = Color(0.62, 0.42, 0.2, 1)
+hair_color = Color(0.55, 0.3, 0.14, 1)
+height_scale = 0.98
+
+[node name="Hester" type="CharacterBody3D" parent="Villagers" unique_id=645132899 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 0.99961543, 44.4)
+script = ExtResource("14_m6886")
+display_name = "Hester"
+lines = PackedStringArray("Mira\'s apples, my prices. Don\'t haggle, I\'m old and I\'ve heard it all.", "That girl does all the work and I take all the credit. As grandmothers should.")
+body_type = "female"
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.5, 0.45, 0.62, 1)
+hair_color = Color(0.62, 0.62, 0.62, 1)
+height_scale = 0.93
+
+[node name="Osric" type="CharacterBody3D" parent="Villagers" unique_id=1770565391 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.5, 0.9996614, 44.4)
+script = ExtResource("14_m6886")
+display_name = "Osric"
+lines = PackedStringArray("Boots mended, soles replaced. Yours look like they\'ve walked to the moon and back.", "My wife\'s the guard captain. Yes, really. No, I\'m not scared of her. Much.")
+skin_color = Color(0.5, 0.36, 0.27, 1)
+tunic_color = Color(0.25, 0.35, 0.26, 1)
+hair_color = Color(0.12, 0.09, 0.07, 1)
+beard = true
+height_scale = 0.99
+
+[node name="Lysa" type="CharacterBody3D" parent="Villagers" unique_id=2018728237 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-0.5547014, 0, -0.8320495, 0, 1, 0, 0.8320495, 0, -0.5547014, -18.2, 0.97070384, 35.6)
+script = ExtResource("14_m6886")
+display_name = "Lysa"
+lines = PackedStringArray("Nell says the new traveller is handsome. I said I hadn\'t noticed. I\'d noticed.", "Don\'t tell my mother I\'m not at the stall.")
+body_type = "female"
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.7, 0.4, 0.45, 1)
+hair_color = Color(0.55, 0.3, 0.14, 1)
+hair_style = "long"
+height_scale = 0.96
+idle_animation = "Idle_Talking"
+
+[node name="Nell" type="CharacterBody3D" parent="Villagers" unique_id=1754569922 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(0.5547014, 0, 0.8320495, 0, 1, 0, -0.8320495, 0, 0.5547014, -17, 0.9653733, 36.4)
+script = ExtResource("14_m6886")
+display_name = "Nell"
+lines = PackedStringArray("I\'m going to be a smith like my father. Only better. Don\'t tell him the second part.", "Lysa never stops talking. I love her, but she never stops.")
+body_type = "female"
+skin_color = Color(0.5, 0.36, 0.27, 1)
+tunic_color = Color(0.32, 0.32, 0.35, 1)
+hair_color = Color(0.12, 0.09, 0.07, 1)
+hair_style = "buzzed"
+height_scale = 0.98
+idle_animation = "Idle_Talking"
+
+[node name="Anselm" type="CharacterBody3D" parent="Villagers" unique_id=392541871 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 9.069334, 44.6)
+script = ExtResource("14_m6886")
+display_name = "Anselm"
+lines = PackedStringArray("Peace be with you, traveller. The doors are always open; the benches are always hard.", "We built this church stone by stone, hauled up that hill on our backs. Mostly Tobin\'s back.", "If something troubles you, come and sit. I\'m a good listener.")
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.22, 0.22, 0.26, 1)
+hair_color = Color(0.62, 0.62, 0.62, 1)
+height_scale = 0.98
+
+[node name="Wendel" type="CharacterBody3D" parent="Villagers" unique_id=1272279214 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-0.077188455, 0, 0.99701655, 0, 1, 0, -0.99701655, 0, -0.077188455, 27.5, 2.3852317, 42.8)
+script = ExtResource("14_m6886")
+display_name = "Wendel"
+lines = PackedStringArray("Father Anselm sent me to sweep the road. The whole road. Down the whole hill.", "Have you seen the view from the bell tower? You can see the whole valley.")
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.7, 0.66, 0.56, 1)
+hair_color = Color(0.78, 0.62, 0.38, 1)
+hair_style = "buzzed"
+
+[node name="Hamond" type="CharacterBody3D" parent="Villagers" unique_id=1124371035 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -33.8, 1.6204547, 32.6)
+script = ExtResource("14_m6886")
+display_name = "Hamond"
+lines = PackedStringArray("Bread\'s done for the day. Agnes is selling it, Lysa is \'helping\'.", "Up at four every morning. The ovens don\'t light themselves. I\'ve asked.")
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.8, 0.76, 0.66, 1)
+hair_color = Color(0.35, 0.22, 0.13, 1)
+beard = true
+height_scale = 1.02
+
+[node name="Brannoc" type="CharacterBody3D" parent="Villagers" unique_id=2126938487 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -2.4, 3.972257, 54)
+script = ExtResource("14_m6886")
+display_name = "Brannoc"
+lines = PackedStringArray("Brannoc. Smith. The iron\'s wrong this week. Too soft. Like the people.", "That axe of yours. Who sharpened it, a goat? Bring it by sometime.")
+skin_color = Color(0.5, 0.36, 0.27, 1)
+tunic_color = Color(0.3, 0.22, 0.15, 1)
+hair_color = Color(0.12, 0.09, 0.07, 1)
+hair_style = "buzzed"
+beard = true
+height_scale = 1.06
+
+[node name="Garrick" type="CharacterBody3D" parent="Villagers" unique_id=1438206559 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-0.89442736, 0, 0.4472133, 0, 1, 0, -0.4472133, 0, -0.89442736, 7.4, 4.7692146, 61.6)
+script = ExtResource("14_m6886")
+display_name = "Garrick"
+lines = PackedStringArray("The fields are up on the south slope. Best soil in the valley, worst hill to plough.", "Edda wants to go to the city. What\'s in the city that isn\'t here? Besides everything.")
+skin_color = Color(0.74, 0.56, 0.43, 1)
+tunic_color = Color(0.45, 0.45, 0.25, 1)
+hair_color = Color(0.35, 0.22, 0.13, 1)
+height_scale = 1.03
+idle_animation = "Idle_Talking"
+
+[node name="Edda" type="CharacterBody3D" parent="Villagers" unique_id=1413221357 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(0.8944273, 0, -0.44721332, 0, 1, 0, 0.44721332, 0, 0.8944273, 6.8, 4.852681, 62.8)
+script = ExtResource("14_m6886")
+display_name = "Edda"
+lines = PackedStringArray("Father thinks the world ends at the treeline. It doesn\'t. I\'ve seen maps.", "One day I\'ll leave. Probably. Maybe after the harvest.")
+body_type = "female"
+skin_color = Color(0.74, 0.56, 0.43, 1)
+tunic_color = Color(0.5, 0.6, 0.4, 1)
+hair_color = Color(0.78, 0.62, 0.38, 1)
+hair_style = "long"
+height_scale = 0.97
+idle_animation = "Idle_Talking"
+
+[node name="Rook" type="CharacterBody3D" parent="Villagers" unique_id=324042448 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-0.31622732, 0, -0.94868344, 0, 1, 0, 0.94868344, 0, -0.31622732, 19.4, 0.17382976, 14.6)
+script = ExtResource("14_m6886")
+display_name = "Rook"
+lines = PackedStringArray("Rook. I hunt. Deer, boar, and the occasional idiot who wanders off the path.", "Wren tracks better than me. Don\'t tell her I said so.")
+outfit = "ranger"
+skin_color = Color(0.74, 0.56, 0.43, 1)
+tunic_color = Color(0.45, 0.4, 0.32, 1)
+hair_color = Color(0.12, 0.09, 0.07, 1)
+hood = true
+height_scale = 1.03
+idle_animation = "Idle_Talking"
+
+[node name="Wren" type="CharacterBody3D" parent="Villagers" unique_id=248953033 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(0.31622735, 0, 0.94868344, 0, 1, 0, -0.94868344, 0, 0.31622735, 20.6, 0.29003716, 15)
+script = ExtResource("14_m6886")
+display_name = "Wren"
+lines = PackedStringArray("Something\'s been stripping bark off the pines to the east. Not deer. Too high up.", "Rook says I track better than him. He thinks I can\'t hear him.")
+body_type = "female"
+outfit = "ranger"
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.45, 0.4, 0.32, 1)
+hair_color = Color(0.35, 0.22, 0.13, 1)
+height_scale = 0.97
+idle_animation = "Idle_Talking"
+
+[node name="Dunstan" type="CharacterBody3D" parent="Villagers" unique_id=930424077 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-0.47885165, 0, -0.87789583, 0, 1, 0, 0.87789583, 0, -0.47885165, 31.8, 0.94672334, 15)
+script = ExtResource("14_m6886")
+display_name = "Dunstan"
+lines = PackedStringArray("Built half the houses in this town. The straight half.", "Need a door fixed? A roof? A coffin? I do all three. The third\'s the quietest work.")
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.65, 0.5, 0.26, 1)
+hair_color = Color(0.62, 0.62, 0.62, 1)
+beard = true
+idle_animation = "Idle_Talking"
+
+[node name="Beatrix" type="CharacterBody3D" parent="Villagers" unique_id=1197313920 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(0.4788516, 0, 0.8778959, 0, 1, 0, -0.8778959, 0, 0.4788516, 32.9, 1.005859, 15.6)
+script = ExtResource("14_m6886")
+display_name = "Beatrix"
+lines = PackedStringArray("Dunstan talks about wood the way other men talk about ale.", "Alys has his hands. Clever with tools, terrible with tidying.")
+body_type = "female"
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.6, 0.4, 0.4, 1)
+hair_color = Color(0.35, 0.22, 0.13, 1)
+hair_style = "long"
+height_scale = 0.96
+idle_animation = "Idle_Talking"
+
+[node name="Alys" type="CharacterBody3D" parent="Villagers" unique_id=473236919 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.4, 1.3177518, 16.4)
+script = ExtResource("14_m6886")
+display_name = "Alys"
+lines = PackedStringArray("I made the benches in the church. Sit on one. It won\'t break. Probably.", "Father says I\'m too young for the big saw. I\'m not.")
+body_type = "female"
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.4, 0.45, 0.56, 1)
+hair_color = Color(0.35, 0.22, 0.13, 1)
+hair_style = "buzzed"
+height_scale = 0.95
+
+[node name="Rosalind" type="CharacterBody3D" parent="Villagers" unique_id=596399258 instance=ExtResource("13_2ol3x")]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+transform = Transform3D(-0.9828722, 0, 0.18428853, 0, 1, 0, -0.18428853, 0, -0.9828722, 5.9, 0, 21.4)
+script = ExtResource("14_m6886")
+display_name = "Rosalind"
+lines = PackedStringArray("Tobin brings home wood, sawdust and splinters. Mostly splinters.", "Mira\'s a sweet girl. She thinks I don\'t know she takes apples from our tree. I know.")
+body_type = "female"
+skin_color = Color(0.86, 0.69, 0.57, 1)
+tunic_color = Color(0.33, 0.48, 0.3, 1)
+hair_color = Color(0.62, 0.25, 0.12, 1)
+hair_style = "long"
+height_scale = 0.97
+idle_animation = "Idle_Talking"
+
+[node name="Mira" type="CharacterBody3D" parent="Villagers" unique_id=1107212834 instance=ExtResource("13_2ol3x")]
 editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -4.6, 0, 14.7)
-script = ExtResource("5_feg5c")
+script = ExtResource("14_m6886")
 display_name = "Mira"
+lines = PackedStringArray("Oh! You\'re the one from the big house up the road, aren\'t you? I\'m Mira.", "Most mornings I\'m at the market, if you\'re after apples. Don\'t tell Tobin where they came from.", "The forest gets dark early this time of year. Keep a lantern close.")
 body_type = "female"
-lines = PackedStringArray("Oh! You\'re the one from the big house up the road, aren\'t you? I\'m Mira.", "Most mornings I\'m at the market table, if you\'re after apples. Don\'t tell Tobin where they came from.", "The forest gets dark early this time of year. Keep a lantern close.")
 skin_color = Color(0.86, 0.69, 0.57, 1)
 tunic_color = Color(0.27, 0.38, 0.6, 1)
 trousers_color = Color(0.2, 0.2, 0.26, 1)
@@ -88,14 +716,14 @@ hair_style = "long"
 skirt = true
 height_scale = 0.95
 
-[node name="Tobin" type="CharacterBody3D" parent="Villagers" unique_id=216148448 instance=ExtResource("4_sn5h1")]
+[node name="Tobin" type="CharacterBody3D" parent="Villagers" unique_id=2037691863 instance=ExtResource("13_2ol3x")]
 editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 5.6, 0, 23)
-script = ExtResource("5_feg5c")
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 5.6, -4.7683716e-07, 23)
+script = ExtResource("14_m6886")
 display_name = "Tobin"
 lines = PackedStringArray("Name\'s Tobin. I cut wood for the village. Saw you hacking at the pines past the yard.", "Swing from the side, not straight down. Let the axe do the work.", "More folk are moving in, they say. We\'ll need a lot more timber.")
-skin_color = Color(0.68, 0.5, 0.38, 1)
+skin_color = Color(0.74, 0.56, 0.43, 1)
 tunic_color = Color(0.3, 0.43, 0.25, 1)
 trousers_color = Color(0.32, 0.25, 0.17, 1)
-hair_color = Color(0.15, 0.1, 0.07, 1)
+hair_color = Color(0.12, 0.09, 0.07, 1)
 height_scale = 1.03
