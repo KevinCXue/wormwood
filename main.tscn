@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://targets/choppable_tree.tscn" id="14_tree"]
 [ext_resource type="PackedScene" path="res://targets/straw_dummy.tscn" id="15_dummy"]
 [ext_resource type="Script" path="res://combat.gd" id="16_combat"]
+[ext_resource type="PackedScene" path="res://village/village.tscn" id="17_village"]
 
 [sub_resource type="PhysicalSkyMaterial" id="SkyMat_1"]
 ground_color = Color(0.25, 0.27, 0.22, 1)
@@ -88,6 +89,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 0, -9.5)
 
 [node name="WeaponsTable" parent="." instance=ExtResource("13_weapons")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, -11)
+
+[node name="Village" parent="." instance=ExtResource("17_village")]
 
 [node name="TestGrove" type="Node3D" parent="."]
 editor_description = "Twelve choppable trees for testing the axe (targets/choppable_tree.tscn)."

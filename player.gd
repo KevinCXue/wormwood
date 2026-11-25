@@ -20,6 +20,9 @@ var _spawn_point := Vector3.ZERO
 
 
 func _ready() -> void:
+	# Groups are tags any node can look up: villagers find the player with
+	# get_tree().get_first_node_in_group("player") instead of a fixed path.
+	add_to_group("player")
 	_spawn_point = global_position
 	# Set up the controls in code, so you can see exactly what they are.
 	# (You can also do this in Project > Project Settings > Input Map.)
@@ -28,7 +31,7 @@ func _ready() -> void:
 	_add_action("move_forward", [KEY_W, KEY_UP])
 	_add_action("move_back", [KEY_S, KEY_DOWN])
 	_add_action("jump", [KEY_SPACE])
-	_add_action("interact", [KEY_E])     # take / drop (interactor.gd)
+	_add_action("interact", [KEY_E])     # take / drop / talk (interactor.gd)
 	_add_action("toggle_view", [KEY_F])  # first / third person (camera_rig.gd)
 	_add_mouse_action("attack", MOUSE_BUTTON_LEFT)  # swing the equipped item (combat.gd)
 

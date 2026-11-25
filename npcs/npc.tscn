@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://npcs/npc.gd" id="1_npc"]
+[ext_resource type="PackedScene" path="res://mannequin.tscn" id="2_mq"]
+
+[sub_resource type="CapsuleShape3D" id="NpcShape"]
+radius = 0.3
+height = 1.8
+
+[node name="Npc" type="CharacterBody3D"]
+editor_description = "A villager (npc.gd). Set name, lines and colours in the Inspector. Rotate the root to choose which way they face."
+script = ExtResource("1_npc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("NpcShape")
+
+[node name="Model" parent="." instance=ExtResource("2_mq")]

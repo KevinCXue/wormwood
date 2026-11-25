@@ -8,6 +8,8 @@ extends SceneTree
 ## WARNING: this OVERWRITES res://terrain/, so any sculpting, painting or
 ## instancing you did in the editor will be lost. Treat it as "make me a fresh
 ## starting point", then hand-edit in the editor with Terrain3D's tools.
+## Afterwards, run tools/build_village.gd to paint the roads back on and clear
+## the village's ground again.
 ##
 ## `extends SceneTree` with `-s` runs this as the whole program, with no main
 ## scene. _initialize() is our entry point, like main().
