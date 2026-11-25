@@ -1,6 +1,11 @@
 extends Node3D
-## Root of the game world. Home for game-wide hotkeys (quit now; later
-## things like quicksave or a pause menu).
+## Root of the game world. Applies the graphics preset and handles game-wide
+## hotkeys (Esc quits, F2 swaps blocky/detailed characters; later things like
+## quicksave or a pause menu).
+
+
+func _ready() -> void:
+	Settings.apply_quality($WorldEnvironment.environment, get_viewport())
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -10,3 +15,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		# at the end of this frame. This closes the window, and when running
 		# from the editor it's the same as pressing Stop (F8).
 		get_tree().quit()
+	elif event is InputEventKey and event.pressed and not event.echo \
+			and event.physical_keycode == KEY_F2:
+		Settings.toggle_character_detail()

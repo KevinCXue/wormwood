@@ -8,7 +8,7 @@
 [ext_resource type="Terrain3DMaterial" path="res://terrain/material.tres" id="6_tmat"]
 [ext_resource type="Terrain3DAssets" path="res://terrain/assets.tres" id="7_tassets"]
 [ext_resource type="PackedScene" path="res://terrain/colliders.scn" id="8_vcoll"]
-[ext_resource type="PackedScene" path="res://mannequin.tscn" id="9_mannequin"]
+[ext_resource type="Script" path="res://characters/body_slot.gd" id="9_bodyslot"]
 [ext_resource type="PackedScene" path="res://props/village_props.tscn" id="10_props"]
 [ext_resource type="PackedScene" path="res://ui/hud.tscn" id="11_hud"]
 [ext_resource type="Script" path="res://interactor.gd" id="12_interactor"]
@@ -168,7 +168,9 @@ script = ExtResource("1_player")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("PlayerShape_1")
 
-[node name="Model" parent="Player" instance=ExtResource("9_mannequin")]
+[node name="Model" type="Node3D" parent="Player"]
+script = ExtResource("9_bodyslot")
+is_player = true
 
 [node name="CameraRig" type="Node3D" parent="Player" unique_id=353982677]
 top_level = true

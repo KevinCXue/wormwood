@@ -1,5 +1,7 @@
 extends Node3D
-## Orbit camera with a first/third-person toggle (F), Skyrim-style.
+## Orbit camera with a first/third-person toggle (F) and mouse-wheel zoom.
+## Scrolling in past the closest third-person distance switches to first
+## person; scrolling out of first person comes back to third.
 ##
 ## Node layout (all under Player):
 ##   CameraRig (this, Node3D)  -> rotates left/right (yaw) with the mouse
@@ -32,7 +34,10 @@ const BODY_LAYER := 2
 @export var start_pitch_deg := -20.0     # initial downward tilt
 
 @export_group("Third person")
-@export var third_person_distance := 4.0 # metres behind the pivot
+@export var third_person_distance := 4.0 # metres behind the pivot (the wheel changes this)
+@export var min_distance := 1.5          # closest zoom before switching to first person
+@export var max_distance := 8.0          # furthest zoom
+@export var zoom_step := 0.6             # metres per wheel notch
 @export var third_person_height := 1.55  # pivot height above the feet (~shoulders)
 @export var third_person_pitch_deg := Vector2(-70.0, 35.0)  # (min, max) look down / up
 @export var follow_smoothing := 15.0     # higher = camera catches up to the player faster
@@ -71,9 +76,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		var limits := _pitch_limits()
 		_arm.rotation.x = clampf(_arm.rotation.x - event.relative.y * mouse_sensitivity, limits.x, limits.y)
 	elif event.is_action_pressed("toggle_view"):
-		first_person = not first_person
-		var limits := _pitch_limits()  # third person allows less looking up
-		_arm.rotation.x = clampf(_arm.rotation.x, limits.x, limits.y)
+		_set_first_person(not first_person)
+	elif event is InputEventMouseButton and event.pressed \
+			and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		_zoom(-1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1)
 	elif event is InputEventMouseButton and event.pressed \
 			and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		# The OS can still release the mouse (e.g. Cmd+Tab away); clicking
@@ -100,6 +106,26 @@ func _physics_process(delta: float) -> void:
 		# two stay in sync and the player doesn't appear to jitter.
 		var t := 1.0 - exp(-follow_smoothing * delta)
 		global_position = global_position.lerp(_target_position(), t)
+
+
+## Wheel notch: direction -1 = in (closer), +1 = out. The arm length eases
+## towards the new distance in _physics_process, so zooming is smooth.
+func _zoom(direction: int) -> void:
+	if first_person:
+		if direction > 0:
+			third_person_distance = min_distance
+			_set_first_person(false)
+		return
+	if direction < 0 and third_person_distance <= min_distance + 0.01:
+		_set_first_person(true)
+		return
+	third_person_distance = clampf(third_person_distance + direction * zoom_step, min_distance, max_distance)
+
+
+func _set_first_person(value: bool) -> void:
+	first_person = value
+	var limits := _pitch_limits()  # third person allows less looking up
+	_arm.rotation.x = clampf(_arm.rotation.x, limits.x, limits.y)
 
 
 func _target_position() -> Vector3:

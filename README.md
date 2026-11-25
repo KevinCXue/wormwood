@@ -32,7 +32,9 @@ Planned: a village, NPCs, quests, an inventory and other RPG systems.
 | E | Take, drop or equip what's under the crosshair |
 | Left click | Swing the equipped weapon or tool |
 | F | Toggle first / third person |
+| Mouse wheel | Zoom (scroll all the way in for first person) |
 | Hold T | Fast-forward time |
+| F2 | Switch between detailed and blocky characters |
 | Esc | Quit |
 
 ## Project layout
@@ -47,8 +49,19 @@ Planned: a village, NPCs, quests, an inventory and other RPG systems.
 - `tools/`: scripts that generate the terrain, props and house. See the
   header comment in each for how to run it.
 
+## Graphics settings
+
+Characters can be **detailed** (rigged, animated models) or **blocky**
+(greybox, handy for testing mechanics), and graphics quality can be **high** or
+**low**. Defaults are in `project.godot` under `wormwood/graphics`. Macs default
+to low quality. Override for one run with
+`godot --path . -- --detail=blocky --quality=high`.
+
 ## Credits
 
+- Characters from Quaternius's [Universal Base Characters](https://quaternius.com/packs/universalbasecharacters.html)
+  and [Modular Character Outfits – Fantasy](https://quaternius.com/packs/modularcharacteroutfitsfantasy.html),
+  and animations from the [Universal Animation Library](https://quaternius.com/packs/universalanimationlibrary.html) (CC0).
 - 3D models and textures from [Poly Haven](https://polyhaven.com/) (CC0).
 - [EB Garamond](https://github.com/georgd/EB-Garamond) font, SIL Open Font
   License (see `assets/fonts/OFL.txt`).

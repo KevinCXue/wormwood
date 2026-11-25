@@ -13,6 +13,9 @@ extends Node3D
 ## Each physics frame, player.gd calls update_pose(). We compute a target angle
 ## for every joint and ease towards it, so switching between idle, running and
 ## jumping blends smoothly instead of snapping.
+##
+## This is the "blocky" body. It implements the body contract described in
+## characters/body_slot.gd, like the detailed one (characters/humanoid.gd).
 
 @export var stride_length := 1.5    # metres covered per full walk cycle (two steps)
 @export var leg_swing_deg := 38.0   # how far legs swing forward/back at full speed
@@ -41,8 +44,8 @@ var equipped := false
 var swing_tilt := 0.0
 var _swing_t := -1.0  # seconds since the swing started; negative = not swinging
 ## Carried items attach to the right palm, the equipped weapon to the left.
-@onready var hand_socket: Node3D = $Hips/Spine/ShoulderR/ElbowR/HandSocket
-@onready var hand_socket_l: Node3D = $Hips/Spine/ShoulderL/ElbowL/HandSocketL
+@onready var carry_socket: Node3D = $Hips/Spine/ShoulderR/ElbowR/HandSocket
+@onready var weapon_socket: Node3D = $Hips/Spine/ShoulderL/ElbowL/HandSocketL
 
 @onready var _hips: Node3D = $Hips
 @onready var _spine: Node3D = $Hips/Spine
@@ -54,6 +57,18 @@ var _swing_t := -1.0  # seconds since the swing started; negative = not swinging
 @onready var _hip_r: Node3D = $Hips/HipR
 @onready var _knee_l: Node3D = $Hips/HipL/KneeL
 @onready var _knee_r: Node3D = $Hips/HipR/KneeR
+@onready var _head: Node3D = $Hips/Spine/Head
+
+## Meshes grouped by what they're made of, so apply_look() can recolour each
+## group. (Names match the MeshInstance3D nodes in mannequin.tscn.)
+const PARTS := {
+	"skin": ["Head", "Nose", "Forearm", "Hand"],
+	"tunic": ["Torso", "UpperArm"],
+	"trousers": ["Pelvis", "Thigh", "Shin"],
+	"boots": ["Foot"],
+}
+const MAX_HEAD_TURN := 1.2  # radians (~70°): necks don't turn further
+var _look_target: Variant = null  # global position to look at, or null
 
 var _phase := 0.0       # where we are in the walk cycle, in radians (one cycle = TAU)
 var _move_blend := 0.0  # 0 = standing still, 1 = full run (smoothed)
@@ -198,7 +213,117 @@ func update_pose(horizontal_speed: float, on_floor: bool, delta: float) -> void:
 	_shoulder_r.rotation.z = lerpf(_shoulder_r.rotation.z, arm_out_r, k)
 	_hips.position.y = lerpf(_hips.position.y, _hips_rest_y + bob, k)
 
+	# Head: turn towards the look target, if it isn't behind us.
+	var head_yaw := 0.0
+	if _look_target != null:
+		var to_target: Vector3 = _look_target - global_position
+		var relative := wrapf(atan2(-to_target.x, -to_target.z) - global_rotation.y, -PI, PI)
+		if absf(relative) < MAX_HEAD_TURN + 0.4:
+			head_yaw = clampf(relative, -MAX_HEAD_TURN, MAX_HEAD_TURN)
+	_head.rotation.y = lerp_angle(_head.rotation.y, head_yaw, 1.0 - exp(-6.0 * delta))
+
 
 ## Ease a joint's X rotation (its forward/back swing) towards `target`.
 func _ease(joint: Node3D, target: float, k: float) -> void:
 	joint.rotation.x = lerpf(joint.rotation.x, target, k)
+
+
+
+# --- Body contract (see characters/body_slot.gd) --------------------------------------
+
+## Turn the head towards a global position, or back to straight ahead (null).
+func set_look_target(target: Variant) -> void:
+	_look_target = target
+
+
+## The player's body sits on render layer 2 (set per mesh in mannequin.tscn,
+## all but the arms) so the first-person camera can hide it. Anyone else must
+## stay visible to that camera, so their meshes go back to layer 1.
+func use_as_player(is_player: bool) -> void:
+	if not is_player:
+		for mi in find_children("*", "MeshInstance3D", true, false):
+			mi.layers = 1
+
+
+## Right hand: keep the item sitting upright on the palm, facing the way the
+## body faces, whatever angle the arm is at.
+func place_carried(item: Item) -> void:
+	var aabb: AABB = (item.get_node("Mesh") as MeshInstance3D).mesh.get_aabb()
+	var basis := Basis(Vector3.UP, global_rotation.y)
+	# Offset so the bottom-centre of the item rests on top of the hand.
+	var bottom_centre := Vector3(aabb.get_center().x, aabb.position.y, aabb.get_center().z)
+	var palm_top: Vector3 = carry_socket.global_position + Vector3.UP * 0.04
+	item.global_transform = Transform3D(basis, palm_top - basis * bottom_centre)
+
+
+## Left hand: the grip point sits in the fist, angled as the item asks
+## (hold_rotation_deg), relative to the direction the body faces.
+func place_equipped(item: Equipable) -> void:
+	var body := Basis(Vector3.UP, global_rotation.y)
+	# swing_tilt pitches the weapon back (wind-up) and forward (strike) while
+	# we swing; it's 0 the rest of the time.
+	var swing := Basis(Vector3.RIGHT, swing_tilt)
+	var basis := body * swing * Basis.from_euler(item.hold_rotation_deg * (PI / 180.0))
+	var fist: Vector3 = weapon_socket.global_position
+	item.global_transform = Transform3D(basis, fist - basis * item.grip)
+
+
+## Dress the mannequin as a villager. Keys (all optional): skin, tunic,
+## trousers, boots, hair (Colors), hair_style ("short"/"long"), skirt (bool),
+## height_scale (float). body_type is ignored: the mannequin has one build.
+func apply_look(look: Dictionary) -> void:
+	scale = Vector3.ONE * look.get("height_scale", 1.0)
+	for group in PARTS:
+		if not look.has(group):
+			continue
+		var mat := _mat(look[group])
+		for part in PARTS[group]:
+			for mi in find_children(part, "MeshInstance3D", true, false):
+				# The meshes (and their materials) are shared by everyone who
+				# uses mannequin.tscn, including the player.
+				# surface_override_material changes just this one node.
+				mi.set_surface_override_material(0, mat)
+
+	var hair := _mat(look.get("hair", Color(0.25, 0.16, 0.1)))
+	# Short hair: a cap over the top half of the head (a hemisphere).
+	var cap := SphereMesh.new()
+	cap.radius = 0.118
+	cap.height = 0.125
+	cap.is_hemisphere = true
+	_attach(_head, cap, hair, Vector3(0, 0.005, 0.008), Vector3(1.0, 1.15, 1.05))
+	if look.get("hair_style", "short") == "long":
+		# Long hair: a curtain down the back to the shoulders, plus a lock
+		# of it framing each side of the face.
+		var back := BoxMesh.new()
+		back.size = Vector3(0.22, 0.3, 0.07)
+		_attach(_head, back, hair, Vector3(0, -0.1, 0.075))
+		for side in [-1, 1]:
+			var lock := BoxMesh.new()
+			lock.size = Vector3(0.04, 0.2, 0.09)
+			_attach(_head, lock, hair, Vector3(side * 0.1, -0.06, 0.01))
+
+	if look.get("skirt", false):
+		# A flared cylinder hanging from the hips to just below the knees.
+		var cone := CylinderMesh.new()
+		cone.top_radius = 0.175
+		cone.bottom_radius = 0.3
+		cone.height = 0.55
+		var tunic: Color = look.get("tunic", Color(0.4, 0.4, 0.4))
+		_attach(_hips, cone, _mat(tunic.darkened(0.15)), Vector3(0, -0.22, 0))
+
+
+func _attach(parent: Node3D, mesh: Mesh, mat: Material, pos: Vector3, mesh_scale := Vector3.ONE) -> void:
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.material_override = mat
+	mi.position = pos
+	mi.scale = mesh_scale
+	mi.layers = _head.layers  # same render layer as the rest of the body
+	parent.add_child(mi)
+
+
+func _mat(colour: Color) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = colour
+	m.roughness = 0.9
+	return m

@@ -11,7 +11,7 @@ extends CharacterBody3D
 # @onready runs these lookups just before _ready(), once child nodes exist.
 # `$Name` is shorthand for get_node("Name").
 @onready var _camera_rig: Node3D = $CameraRig
-@onready var _model: Node3D = $Model  # the mannequin (mannequin.tscn)
+@onready var _model: BodySlot = $Model  # holds the body (characters/body_slot.gd)
 
 # Read gravity from Project Settings so it matches the physics engine.
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")

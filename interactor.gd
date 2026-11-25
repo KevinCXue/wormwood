@@ -23,7 +23,7 @@ extends Node
 
 @onready var _player: CharacterBody3D = get_parent()
 @onready var _rig: Node3D = $"../CameraRig"
-@onready var _model: Node3D = $"../Model"
+@onready var _model: BodySlot = $"../Model"
 @onready var _hud: CanvasLayer = $"../HUD"
 
 var _target: Item = null         # the item under the crosshair, if any
@@ -101,7 +101,7 @@ func _find_target() -> Node3D:
 
 func _take(item: Item) -> void:
 	_held = item
-	_grab(item, _model.hand_socket)
+	_grab(item, _model.carry_socket)
 	_model.holding = true
 	_place_carried()
 
@@ -110,7 +110,7 @@ func _equip(item: Equipable) -> void:
 	if _equipped:
 		_release(_equipped)  # one slot: the old one falls from the left hand
 	_equipped = item
-	_grab(item, _model.hand_socket_l)
+	_grab(item, _model.weapon_socket)
 	_model.equipped = true
 	_place_equipped()
 
@@ -145,27 +145,14 @@ func _release(item: Item) -> void:
 	item.angular_velocity = Vector3.ZERO
 
 
-## Right hand: keep the item sitting upright on the palm, facing the way the
-## body faces, whatever angle the arm is at.
+## Where exactly a held item sits depends on the body (a code-animated
+## mannequin vs a skeleton), so the body works it out. See body_slot.gd.
 func _place_carried() -> void:
-	var aabb: AABB = (_held.get_node("Mesh") as MeshInstance3D).mesh.get_aabb()
-	var basis := Basis(Vector3.UP, _model.global_rotation.y)
-	# Offset so the bottom-centre of the item rests on top of the hand.
-	var bottom_centre := Vector3(aabb.get_center().x, aabb.position.y, aabb.get_center().z)
-	var palm_top: Vector3 = _model.hand_socket.global_position + Vector3.UP * 0.04
-	_held.global_transform = Transform3D(basis, palm_top - basis * bottom_centre)
+	_model.place_carried(_held)
 
 
-## Left hand: the grip point sits in the fist, angled as the item asks
-## (hold_rotation_deg), relative to the direction the body faces.
 func _place_equipped() -> void:
-	var body := Basis(Vector3.UP, _model.global_rotation.y)
-	# swing_tilt pitches the weapon back (wind-up) and forward (strike) while
-	# the mannequin swings; it's 0 the rest of the time.
-	var swing := Basis(Vector3.RIGHT, _model.swing_tilt)
-	var basis := body * swing * Basis.from_euler(_equipped.hold_rotation_deg * (PI / 180.0))
-	var fist: Vector3 = _model.hand_socket_l.global_position
-	_equipped.global_transform = Transform3D(basis, fist - basis * _equipped.grip)
+	_model.place_equipped(_equipped)
 
 
 func _update_hud() -> void:

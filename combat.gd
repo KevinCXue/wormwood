@@ -1,7 +1,7 @@
 extends Node
 ## Swinging the equipped weapon/tool (left mouse button). A child of Player.
 ##
-## A swing is: play the mannequin's swing animation, wait until the blade
+## A swing is: play the body's swing animation, wait until the blade
 ## would connect (strike_time), then look for things in a sphere in front of
 ## the chest. Anything there with an on_hit() method gets told it was hit;
 ## loose items get knocked about.
@@ -21,7 +21,7 @@ const HITTABLE_LAYER := 3  # set by straw_dummy.gd and choppable_tree.gd
 
 @onready var _player: CharacterBody3D = get_parent()
 @onready var _rig: Node3D = $"../CameraRig"
-@onready var _model: Node3D = $"../Model"
+@onready var _model: BodySlot = $"../Model"
 @onready var _interactor: Node = $"../Interactor"
 
 

@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://characters/humanoid.gd" id="1_hum"]
+
+[node name="Humanoid" type="Node3D"]
+editor_description = "Detailed body (characters/humanoid.gd). The model, animation graph, hand sockets and head-look are built in code when the game runs, so this scene is nearly empty in the editor. Tune the Swing and Hands exports in the Inspector."
+script = ExtResource("1_hum")

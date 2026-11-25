@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://npcs/npc.gd" id="1_npc"]
-[ext_resource type="PackedScene" path="res://mannequin.tscn" id="2_mq"]
+[ext_resource type="Script" path="res://characters/body_slot.gd" id="2_slot"]
 
 [sub_resource type="CapsuleShape3D" id="NpcShape"]
 radius = 0.3
@@ -15,4 +15,5 @@ script = ExtResource("1_npc")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("NpcShape")
 
-[node name="Model" parent="." instance=ExtResource("2_mq")]
+[node name="Model" type="Node3D" parent="."]
+script = ExtResource("2_slot")

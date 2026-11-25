@@ -36,7 +36,7 @@ $GODOT --path .                       # run the game (main scene: main.tscn)
 $GODOT --headless --path . --quit     # import + parse check; look for script errors
 ```
 
-Controls: WASD/arrows move, Space jumps, mouse looks, F switches first/third
+Controls: WASD/arrows move, Space jumps, mouse looks, mouse wheel zooms (all the way in = first person), F switches first/third
 person, E takes/drops/equips, left click swings, hold T to fast-forward time,
 Esc quits. The input actions are registered in code in `player.gd`, not in
 the Project Settings input map.
@@ -46,9 +46,12 @@ the Project Settings input map.
 | Path | What |
 |---|---|
 | `main.tscn` / `main.gd` | World root: environment, Sun/Moon + `DayNight`, `Terrain3D`, House, props, TestGrove (trees), TrainingYard (dummies), Player. `main.gd` handles global hotkeys. |
-| `player.gd` | `CharacterBody3D`: camera-relative movement, jumping, respawn if you fall off the world. Children: `Model`, `CameraRig`, `HUD`, `Interactor`, `Combat`. |
+| `player.gd` | `CharacterBody3D`: camera-relative movement, jumping, respawn if you fall off the world. Children: `Model` (a `BodySlot`), `CameraRig`, `HUD`, `Interactor`, `Combat`. |
+| `settings.gd` | Autoload `Settings`: `character_detail` (`detailed`/`blocky`) and `quality` (`high`/`low`) from the `wormwood/graphics/*` project settings (quality has a `.macos` override to `low`). CLI override: `-- --detail=blocky --quality=high`. F2 in game toggles detail and reloads the scene (`main.gd`). |
+| `characters/body_slot.gd` | `class_name BodySlot`: spawns the body for the current detail setting and forwards the **body contract** (listed in its header) to it. Rotate the slot to turn the character. |
+| `characters/humanoid.gd/.tscn` | Detailed body, built lazily (villagers on `apply_look`, the player on its first frame as a hoodless ranger): outfit glTF (peasant/ranger, male/female) is the body and skeleton; the head is cut from the superhero base body by bone weights (`_head_only`) and bound to it with eyes, eyebrows and hair. `characters/dye.gdshader` recolours the peasant outfit's linen (`tunic` colour). `AnimationTree` built in code (locomotion blend by speed, jump, filtered carry/ready arm poses, upper-body one-shot swing), `BoneAttachment3D` sockets (weapon = right hand, carry = left), `LookAtModifier3D` head turn. |
 | `camera_rig.gd` | Orbit camera (yaw node → SpringArm3D pitch → Camera3D) with the first/third-person toggle. `top_level`, so it follows the player in code. |
-| `mannequin.gd/.tscn` | Greybox humanoid animated procedurally: a tree of pivot nodes used as joints, eased each frame by `update_pose()`. Has the hand sockets and the swing animation. |
+| `mannequin.gd/.tscn` | Blocky body: greybox humanoid animated procedurally (pivot nodes as joints, eased each frame by `update_pose()`). Implements the same body contract (weapon = left hand, carry = right). |
 | `interactor.gd` | Raycast from the screen centre to find items or villagers in reach. Right hand carries an `Item`, left hand holds an `Equipable`. Grabbing = freeze + clear collision + reparent to a hand socket. E on an `Npc` shows their next line as a subtitle. |
 | `combat.gd` | Left click → swing → sphere overlap query → calls `on_hit(weapon, from_pos, dir)` on the nearest hittable (duck typing). |
 | `item.gd` / `equipable.gd` | `class_name Item` (RigidBody3D, `display_name`) and `Equipable extends Item` (`grip`, `hold_rotation_deg`, `kind` = `"blade"`/`"axe"`). |
@@ -57,11 +60,11 @@ the Project Settings input map.
 | `day_night.gd` | Moves the sun and moon. The sky (PhysicalSkyMaterial), fog and ambient light follow automatically. |
 | `lights/flicker.gd` | Noise-driven candle/lantern flicker. |
 | `ui/` | `hud.tscn/.gd` (interaction prompt, dialogue subtitle) and `crosshair.gd` (dot drawn in `_draw`). |
-| `npcs/` | `npc.tscn/.gd` (`class_name Npc`): a villager. Recolours the mannequin per instance (surface override materials, meshes moved to render layer 1), adds hair and an optional skirt, watches the player, `talk()` returns their next line. |
+| `npcs/` | `npc.tscn/.gd` (`class_name Npc`): a villager. Look exports (`body_type`, colours, hair) go to the body via `apply_look()`; watches the player via `set_look_target()`; `talk()` returns their next line. |
 | `village/` | `village.tscn`: Roads (`road.gd`, `class_name Road`, a `Path3D` with a `width`), Buildings (cottages) and Villagers. **Hand-editable source of truth for the village layout.** |
 | `buildings/` | Generated cottage scenes (`tools/build_cottages.gd`). Each root has a `footprint` metadata entry (Vector2 metres) that `build_village.gd` reads. |
 | `props/` | Generated prop scenes: `items/`, `tables/`, `furniture/`, plus the hand-editable layouts `village_props.tscn` and `weapons_table.tscn`. |
-| `assets/` | Poly Haven models and textures, generated vegetation, EB Garamond font. |
+| `assets/` | Poly Haven models and textures, generated vegetation, EB Garamond font. `assets/characters/quaternius/` (Universal Base Characters, CC0; only heads, eyes and hair are used), `assets/characters/outfits/` (Modular Character Outfits – Fantasy, CC0; textures downscaled 4K→2K) and `assets/animations/UAL1_Standard.glb` (Universal Animation Library, CC0). All share one 65-bone skeleton (UE-style names: `pelvis`, `spine_01`, `hand_r`...), so clips play on any of them without retargeting. Two glTFs had their normal-map file names fixed by hand. |
 | `terrain/` | Terrain3D data, materials and vegetation colliders (generated). |
 | `addons/terrain_3d/` | Third-party Terrain3D plugin (native binaries included). Don't edit it. |
 | `tools/` | Headless generator scripts, see below. |
@@ -74,6 +77,9 @@ the Project Settings input map.
 - **Physics layers** (named in `project.godot`): 1 `world` (everything solid),
   2 `items` (added by `item.gd`), 3 `hittable` (dummies, trees). Queries use
   masks so they only see the layer they care about.
+- **Bodies:** player/NPC code talks only to the `BodySlot` (body contract in
+  `characters/body_slot.gd`), never to mannequin or humanoid internals. A
+  new capability = add it to the contract and to both bodies.
 - **Villagers** are `npcs/npc.tscn` instances under `village.tscn`/Villagers.
   Appearance and dialogue are exports on the instance; the root's yaw picks
   which way they face.
