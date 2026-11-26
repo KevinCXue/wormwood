@@ -48,6 +48,10 @@ const OUTFIT_DIR := "res://assets/characters/outfits/"
 const OUTFITS := {"peasant": "Peasant", "ranger": "Ranger"}
 ## Bones whose skin counts as "head" when cutting the head off a base body.
 const HEAD_BONES := ["Head", "neck_01"]
+## A vertex counts as "neck or head" when at least this much of its skin
+## weight (0..1) is on HEAD_BONES. The head keeps those triangles; the outfit
+## loses them (see _strip_outfit_neck).
+const HEAD_WEIGHT_CUTOFF := 0.5
 ## The peasant outfit textures; the dye shader recolours the linen.
 const DYE_TEXTURES := {
 	"albedo": "res://assets/characters/outfits/T_Peasant_BaseColor.png",
@@ -116,6 +120,7 @@ var weapon_socket: BoneAttachment3D  # right hand
 static var _library: AnimationLibrary
 ## Head-only meshes cut from the base bodies, one per body type, shared.
 static var _head_meshes := {}
+static var _outfit_meshes := {}  # mesh -> the same mesh without its neck, shared by everyone in that outfit
 
 var _character: Node3D   # the imported model
 var _skeleton: Skeleton3D
@@ -283,6 +288,7 @@ func _build(body_type: String, outfit: String) -> void:
 	_character.rotation.y = PI  # model faces +Z; ours face -Z
 	add_child(_character)
 	_skeleton = _character.find_child("Skeleton3D", true, false)
+	_strip_outfit_neck()
 	_add_head(body_type)
 	carry_socket = _socket("CarrySocket", "hand_l")
 	weapon_socket = _socket("WeaponSocket", "hand_r")
@@ -567,15 +573,29 @@ func _add_head(body_type: String) -> void:
 	base.free()
 
 
-## A copy of a skinned mesh keeping only the triangles whose vertices are
-## mostly weighted to the head and neck bones. (Each vertex lists up to 4 or 8
-## bones and how much each one moves it; we look at the strongest.)
+## The outfit bodies come with a neck of their own, painted in a fixed skin
+## tone. Our head brings a neck too (matching the chosen skin), and where the
+## two overlap the outfit's darker neck poked through the back of it, like a
+## gash on the nape. Cut the back half of the outfit's neck away so only ours
+## shows there. (Only the back: at the front the outfit's neck also fills the
+## tunic's V opening, which our head doesn't reach down into.)
+func _strip_outfit_neck() -> void:
+	for mi: MeshInstance3D in _skeleton.find_children("*", "MeshInstance3D", false, false):
+		if not _outfit_meshes.has(mi.mesh):
+			_outfit_meshes[mi.mesh] = _split_at_neck(mi.mesh, mi.skin, _skeleton, false)
+		mi.mesh = _outfit_meshes[mi.mesh]
+
+
 static func _head_only(mesh: Mesh, skin: Skin, skeleton: Skeleton3D) -> ArrayMesh:
-	var arrays := mesh.surface_get_arrays(0)
-	var bones: PackedInt32Array = arrays[Mesh.ARRAY_BONES]
-	var weights: PackedFloat32Array = arrays[Mesh.ARRAY_WEIGHTS]
-	var vertex_count: int = arrays[Mesh.ARRAY_VERTEX].size()
-	var per_vertex := bones.size() / vertex_count  # 4 or 8 influences per vertex
+	return _split_at_neck(mesh, skin, skeleton, true)
+
+
+## A copy of a skinned mesh keeping only the triangles that are part of the
+## head and neck (keep_head = true), or everything except the BACK of the neck
+## (false; see _strip_outfit_neck). Each vertex lists up to 4 or 8 bones and
+## how much each one moves it; a vertex is "head" when HEAD_BONES carry at
+## least HEAD_WEIGHT_CUTOFF of that.
+static func _split_at_neck(mesh: Mesh, skin: Skin, skeleton: Skeleton3D, keep_head: bool) -> ArrayMesh:
 	# Mesh bone indices point into the Skin's bind list, not the skeleton.
 	var is_head_bind := []
 	for b in skin.get_bind_count():
@@ -583,29 +603,55 @@ static func _head_only(mesh: Mesh, skin: Skin, skeleton: Skeleton3D) -> ArrayMes
 		if bone_name == "":
 			bone_name = skeleton.get_bone_name(skin.get_bind_bone(b))
 		is_head_bind.append(bone_name in HEAD_BONES)
-	var is_head_vertex := PackedByteArray()
-	is_head_vertex.resize(vertex_count)
-	for v in vertex_count:
-		var strongest := 0
-		for j in per_vertex:
-			if weights[v * per_vertex + j] > weights[v * per_vertex + strongest]:
-				strongest = j
-		is_head_vertex[v] = 1 if is_head_bind[bones[v * per_vertex + strongest]] else 0
-	var old_indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
-	var indices := PackedInt32Array()
-	for t in range(0, old_indices.size(), 3):
-		if is_head_vertex[old_indices[t]] and is_head_vertex[old_indices[t + 1]] and is_head_vertex[old_indices[t + 2]]:
-			indices.append_array([old_indices[t], old_indices[t + 1], old_indices[t + 2]])
-	arrays[Mesh.ARRAY_INDEX] = indices
-	# Some exports carry extra custom per-vertex channels we don't render;
-	# they'd need their exact format flags to rebuild, so drop them.
-	for channel in [Mesh.ARRAY_CUSTOM0, Mesh.ARRAY_CUSTOM1, Mesh.ARRAY_CUSTOM2, Mesh.ARRAY_CUSTOM3]:
-		arrays[channel] = null
-	var head := ArrayMesh.new()
-	var flags: int = mesh.surface_get_format(0) & Mesh.ARRAY_FLAG_USE_8_BONE_WEIGHTS
-	head.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [], {}, flags)
-	head.surface_set_material(0, mesh.surface_get_material(0))
-	return head
+	var result := ArrayMesh.new()
+	for surface in mesh.get_surface_count():
+		var arrays := mesh.surface_get_arrays(surface)
+		var bones: PackedInt32Array = arrays[Mesh.ARRAY_BONES]
+		var weights: PackedFloat32Array = arrays[Mesh.ARRAY_WEIGHTS]
+		var vertex_count: int = arrays[Mesh.ARRAY_VERTEX].size()
+		var per_vertex := bones.size() / vertex_count  # 4 or 8 influences per vertex
+		var is_head_vertex := PackedByteArray()
+		is_head_vertex.resize(vertex_count)
+		for v in vertex_count:
+			var head_weight := 0.0
+			for j in per_vertex:
+				if is_head_bind[bones[v * per_vertex + j]]:
+					head_weight += weights[v * per_vertex + j]
+			is_head_vertex[v] = 1 if head_weight >= HEAD_WEIGHT_CUTOFF else 0
+		# The neck's centre line front-to-back: the average Z of its vertices.
+		# The models face +Z, so the back of the neck is the part below that.
+		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var neck_z := 0.0
+		var neck_count := 0
+		for v in vertex_count:
+			if is_head_vertex[v]:
+				neck_z += vertices[v].z
+				neck_count += 1
+		neck_z /= maxi(neck_count, 1)
+		var old_indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+		var indices := PackedInt32Array()
+		for t in range(0, old_indices.size(), 3):
+			var a := old_indices[t]
+			var b := old_indices[t + 1]
+			var c := old_indices[t + 2]
+			var all_head := is_head_vertex[a] and is_head_vertex[b] and is_head_vertex[c]
+			var keep := all_head
+			if not keep_head:
+				var behind := (vertices[a].z + vertices[b].z + vertices[c].z) / 3.0 < neck_z
+				keep = not (all_head and behind)
+			if keep:
+				indices.append_array([a, b, c])
+		if indices.is_empty():
+			continue  # e.g. the boots have no neck: nothing to keep for a head
+		arrays[Mesh.ARRAY_INDEX] = indices
+		# Some exports carry extra custom per-vertex channels we don't render;
+		# they'd need their exact format flags to rebuild, so drop them.
+		for channel in [Mesh.ARRAY_CUSTOM0, Mesh.ARRAY_CUSTOM1, Mesh.ARRAY_CUSTOM2, Mesh.ARRAY_CUSTOM3]:
+			arrays[channel] = null
+		var flags: int = mesh.surface_get_format(surface) & Mesh.ARRAY_FLAG_USE_8_BONE_WEIGHTS
+		result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [], {}, flags)
+		result.surface_set_material(result.get_surface_count() - 1, mesh.surface_get_material(surface))
+	return result
 
 
 func _set_hair(style: String, colour: Color) -> void:
