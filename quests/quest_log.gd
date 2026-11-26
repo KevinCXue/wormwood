@@ -12,7 +12,7 @@ signal changed
 const QUEST_DIR := "res://quests/"
 
 var _quests := {}  # id -> QuestData, every quest in the game
-var _state := {}   # id -> {"stage": int, "done": bool, "order": int}, quests you've started
+var _state := {}   # id -> {"stage", "done", "order", and "failed" if it failed}, quests you've started
 var _started := 0  # counts up, so the journal can list quests in the order you got them
 
 @onready var _inventory: Node = $"../Inventory"
@@ -95,6 +95,28 @@ func complete(id: String) -> void:
 	changed.emit()
 
 
+## The quest can't be finished any more (its giver died). Shown under
+## Completed, marked as failed. Quests you hadn't started fail too, so the
+## journal says why they're gone.
+func fail(id: String, because_of := "") -> void:
+	if is_done(id) or quest(id) == null:
+		return
+	var was_started := is_started(id)
+	if not was_started:
+		_started += 1
+		_state[id] = {"stage": 0, "done": false, "order": _started}
+	_state[id].done = true
+	_state[id].failed = true
+	_state[id].why = "%s is dead." % because_of if because_of else ""
+	if was_started:
+		_hud.show_banner("QUEST FAILED", quest(id).title)
+	changed.emit()
+
+
+func is_failed(id: String) -> bool:
+	return _state.has(id) and _state[id].get("failed", false)
+
+
 ## Quests in the order you got them. `done` picks finished or unfinished
 ## ones; `category` (QuestData.Category) narrows it down, -1 for any.
 func quests(done: bool, category := -1) -> Array:
@@ -109,6 +131,8 @@ func objective(id: String) -> String:
 	var q := quest(id)
 	if q == null:
 		return ""
+	if is_failed(id):
+		return "Failed. " + _state[id].get("why", "")
 	if is_done(id):
 		return q.completed_text
 	var s := stage(id)
@@ -128,6 +152,7 @@ func load_state(state: Dictionary) -> void:
 	for id in saved:
 		var entry: Dictionary = saved[id]
 		_state[id] = {"stage": int(entry.get("stage", 0)), "done": bool(entry.get("done", false)),
-			"order": int(entry.get("order", 0))}
+			"order": int(entry.get("order", 0)), "failed": bool(entry.get("failed", false)),
+			"why": String(entry.get("why", ""))}
 	_started = int(state.get("started", _state.size()))
 	changed.emit()

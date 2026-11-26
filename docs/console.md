@@ -33,6 +33,10 @@ it's always current.
 | `tp VILLAGER` | Teleport in front of a villager, facing them (`tp tobin`, `tp anselm`...). |
 | `tp X Y Z` | Teleport to coordinates (you land on the ground below or above). |
 | `time HH[:MM]` | Set the time of day, 24-hour clock (`time 21:30`). |
+| `heal [AMOUNT]` | Restore your health (all of it without an amount). |
+| `hurt AMOUNT` | Damage yourself (test the health bar, or dying). |
+| `god` | Toggle invulnerability. |
+| `kill VILLAGER` | Kill a villager (their quests fail). |
 | `save` | Save, like F5. |
 | `load` | Load the newest save. |
 | `newgame` | Start a new game. Your saves are kept (F9 still lists them). |

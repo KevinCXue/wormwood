@@ -25,7 +25,7 @@ const PLAYER := {
 		["E", "Take into your bag, or talk to someone"],
 		["hold E", "Carry by hand (a weapon: equip it)"],
 		["E", "Drop what you're carrying"],
-		["Click", "Swing your weapon"],
+		["Click", "Swing your weapon, or punch with an empty hand"],
 		["I / Tab", "Inventory"],
 		["hold Q", "Favourites wheel"],
 		["J", "Journal (your quests)"],
@@ -45,7 +45,7 @@ const SYSTEM := {
 	],
 	"In menus": [
 		["W / S", "Move up and down (arrow keys too); Enter picks"],
-		["E", "Inventory: equip or put away a weapon"],
+		["E", "Inventory: equip or put away a weapon, or eat food"],
 		["F", "Inventory: add to or remove from the wheel"],
 		["R", "Inventory: drop one"],
 		["Mouse", "Wheel: point at a slot, let go of Q to use"],

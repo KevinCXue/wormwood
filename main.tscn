@@ -27,6 +27,8 @@
 [ext_resource type="PackedScene" path="res://ui/journal.tscn" id="37_journal"]
 [ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="38_pause"]
 [ext_resource type="PackedScene" path="res://ui/title_screen.tscn" id="39_title"]
+[ext_resource type="Script" path="res://combat/health.gd" id="40_health"]
+[ext_resource type="PackedScene" path="res://ui/game_over.tscn" id="41_gameover"]
 
 [sub_resource type="PhysicalSkyMaterial" id="SkyMat_1"]
 ground_color = Color(0.25, 0.27, 0.22, 1)
@@ -195,6 +197,10 @@ fov = 72.75123
 
 [node name="HUD" parent="Player" instance=ExtResource("11_hud")]
 
+[node name="Health" type="Node" parent="Player"]
+script = ExtResource("40_health")
+max_health = 40
+
 [node name="Inventory" type="Node" parent="Player"]
 script = ExtResource("30_inventory")
 
@@ -220,5 +226,7 @@ script = ExtResource("16_combat")
 [node name="Journal" parent="Player" instance=ExtResource("37_journal")]
 
 [node name="PauseMenu" parent="Player" instance=ExtResource("38_pause")]
+
+[node name="GameOver" parent="Player" instance=ExtResource("41_gameover")]
 
 [node name="TitleScreen" parent="." instance=ExtResource("39_title")]

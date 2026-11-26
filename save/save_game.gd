@@ -50,6 +50,8 @@ var _first_world := true   # the first world of this run shows the title screen
 var _title_next := false   # "Quit to title": show the title after the reload
 ## True while the title screen is up: no autosaves (ui/title_screen.gd).
 var on_title := false
+## True while the player is dead: nothing may be saved (player.gd).
+var blocked := false
 var _autosave_left := AUTOSAVE_MINUTES * 60.0
 
 
@@ -71,6 +73,7 @@ func world_ready(world: Node) -> void:
 	var real_game: bool = get_tree().get_script() == null
 	var args := OS.get_cmdline_user_args()
 	on_title = false
+	blocked = false
 	if state.is_empty() and (_title_next or (_first_world and real_game)):
 		if _first_world and "--continue" in args:
 			var saves := list_saves()
@@ -87,7 +90,7 @@ func world_ready(world: Node) -> void:
 
 func _process(delta: float) -> void:
 	# Autoloads pause with the tree, so menus stop this clock.
-	if _world == null or not is_instance_valid(_world) or on_title:
+	if _world == null or not is_instance_valid(_world) or on_title or blocked:
 		return
 	_autosave_left -= delta / maxf(Engine.time_scale, 0.01)  # real seconds, even under the wheel's slow motion
 	if _autosave_left <= 0.0:
@@ -96,7 +99,7 @@ func _process(delta: float) -> void:
 
 func _notification(what: int) -> void:
 	# Closing the window: autosave on the way out.
-	if what == NOTIFICATION_WM_CLOSE_REQUEST and _world and is_instance_valid(_world) and not on_title:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and _world and is_instance_valid(_world) and not on_title and not blocked:
 		save("auto")
 
 
@@ -104,7 +107,7 @@ func _notification(what: int) -> void:
 
 ## Write a new save of `kind` ("manual" or "auto"). Returns its path, or "".
 func save(kind := "manual") -> String:
-	if _world == null or not is_instance_valid(_world) or on_title:
+	if _world == null or not is_instance_valid(_world) or on_title or blocked:
 		return ""
 	_autosave_left = AUTOSAVE_MINUTES * 60.0
 	var state := capture(_world)

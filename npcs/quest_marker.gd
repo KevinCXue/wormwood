@@ -56,7 +56,8 @@ func _update() -> void:
 		if player:
 			_log = player.get_node_or_null("QuestLog")
 	var kind := ""
-	if _log:
+	var npc := get_parent()
+	if _log and not (npc.has_method("can_talk") and not npc.can_talk()):  # dead, fighting or fleeing: no bubble
 		for id in quest_ids:
 			if not _log.is_started(id):
 				kind = "new"

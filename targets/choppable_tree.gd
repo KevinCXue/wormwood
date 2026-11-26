@@ -84,16 +84,18 @@ func load_state(state: Dictionary) -> void:
 
 
 ## Called by combat.gd. `from` is where the attacker stands, `dir` the swing direction.
-func on_hit(weapon: Equipable, from: Vector3, dir: Vector3) -> void:
+## Only an axe cuts; a sword glances off, and a fist barely shakes it.
+func on_hit(weapon: Equipable, from: Vector3, dir: Vector3, _attacker: Node3D = null) -> void:
 	if _falling:
 		return
 	var to_attacker := from - global_position
 	to_attacker.y = 0.0
 	to_attacker = to_attacker.normalized()
 	var bark_point := global_position + Vector3.UP * CUT_HEIGHT + to_attacker * 0.26 * size
-	_wobble_vel += Vector2(dir.x, dir.z) * (0.3 if weapon.kind == "axe" else 0.12)
+	var axe := weapon != null and weapon.kind == "axe"
+	_wobble_vel += Vector2(dir.x, dir.z) * (0.3 if axe else (0.12 if weapon else 0.04))
 
-	if weapon.kind != "axe":
+	if not axe:
 		HitFx.burst(self, bark_point, Color(0.3, 0.21, 0.14), to_attacker, 6, 0.03, 2.0)
 		return
 

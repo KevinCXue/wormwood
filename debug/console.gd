@@ -44,6 +44,10 @@ func _ready() -> void:
 		"gold": [_gold, "gold AMOUNT", "Add gold (negative to take some away)."],
 		"tp": [_tp, "tp PLACE | tp VILLAGER | tp X Y Z", "Teleport. `tp` alone lists the places."],
 		"time": [_time, "time HH[:MM]", "Set the time of day (24-hour clock)."],
+		"heal": [_heal, "heal [AMOUNT]", "Restore your health (all of it, without an amount)."],
+		"hurt": [_hurt, "hurt AMOUNT", "Damage yourself (to test the health bar or dying)."],
+		"god": [_god, "god", "Toggle invulnerability."],
+		"kill": [_kill, "kill VILLAGER", "Kill a villager (their quests fail)."],
 		"save": [_save, "save", "Save the game (like F5)."],
 		"load": [_load, "load", "Load the newest save."],
 		"newgame": [_newgame, "newgame", "Start a new game. Saves are kept."],
@@ -231,6 +235,41 @@ func _time(args: PackedStringArray) -> void:
 	_say("Time: %s." % args[0])
 
 
+func _heal(args: PackedStringArray) -> void:
+	var h: Health = _player_node("Health")
+	if h:
+		h.heal(int(args[0]) if args.size() > 0 else h.max_health)
+		_say("Health: %d / %d." % [h.health, h.max_health])
+
+
+func _hurt(args: PackedStringArray) -> void:
+	var h: Health = _player_node("Health")
+	if h and args.size() > 0 and args[0].is_valid_int():
+		h.damage(int(args[0]))
+		_say("Health: %d / %d." % [h.health, h.max_health])
+	else:
+		_error("usage: hurt AMOUNT")
+
+
+func _god(_args: PackedStringArray) -> void:
+	var h: Health = _player_node("Health")
+	if h:
+		h.invulnerable = not h.invulnerable
+		_say("God mode %s." % ("on" if h.invulnerable else "off"))
+
+
+func _kill(args: PackedStringArray) -> void:
+	if args.is_empty():
+		_error("usage: kill VILLAGER")
+		return
+	for npc in get_tree().get_nodes_in_group("npcs"):
+		if npc.display_name.to_lower() == args[0].to_lower():
+			npc.health.damage(npc.health.health)
+			_say("%s is dead." % npc.display_name)
+			return
+	_error("no villager called \"%s\"." % args[0])
+
+
 func _save(_args: PackedStringArray) -> void:
 	var path := SaveGame.save("manual")
 	_say("Saved to %s." % path if path else "Nothing to save here.")
@@ -359,6 +398,8 @@ func _complete() -> void:
 				options = _places(SaveGame.world()).keys() if SaveGame.world() and arg == 0 else []
 			"help":
 				options = _commands.keys() if arg == 0 else []
+			"kill":
+				options = get_tree().get_nodes_in_group("npcs").map(func(n): return n.display_name.to_lower()) if arg == 0 else []
 	var partial: String = words[-1]
 	var matches := options.filter(func(o): return String(o).begins_with(partial))
 	if matches.is_empty():

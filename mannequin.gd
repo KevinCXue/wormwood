@@ -43,6 +43,7 @@ var equipped := false
 ## positive = back over the shoulder). interactor.gd applies it to the weapon.
 var swing_tilt := 0.0
 var _swing_t := -1.0  # seconds since the swing started; negative = not swinging
+var _dead := false
 ## Carried items attach to the right palm, the equipped weapon to the left.
 @onready var carry_socket: Node3D = $Hips/Spine/ShoulderR/ElbowR/HandSocket
 @onready var weapon_socket: Node3D = $Hips/Spine/ShoulderL/ElbowL/HandSocketL
@@ -82,9 +83,27 @@ func _ready() -> void:
 
 
 ## Start a swing with the left arm (ignored if one is already in progress).
-func start_swing() -> void:
-	if not is_swinging():
+## A punch uses the same motion (the blocky body is for testing mechanics).
+func start_swing(_punch := false) -> void:
+	if not is_swinging() and not _dead:
 		_swing_t = 0.0
+
+
+## Hit reaction: nothing for the blocky body.
+func flinch() -> void:
+	pass
+
+
+## Topple over backwards and stay down. `instant` (restoring a save) skips
+## the fall.
+func die(instant := false) -> void:
+	_dead = true
+	var lying := Vector3(deg_to_rad(80.0), rotation.y, 0.0)
+	if instant:
+		rotation = lying
+	else:
+		create_tween().tween_property(self, "rotation", lying, 0.6) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 
 func is_swinging() -> bool:
@@ -122,6 +141,8 @@ func _swing_pose(t: float) -> Array:
 
 
 func update_pose(horizontal_speed: float, on_floor: bool, delta: float) -> void:
+	if _dead:
+		return
 	_time += delta
 	var k := 1.0 - exp(-pose_smoothing * delta)  # frame-rate-independent easing factor
 	_move_blend = lerpf(_move_blend, clampf(horizontal_speed / run_speed, 0.0, 1.0), k)

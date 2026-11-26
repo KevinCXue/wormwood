@@ -16,6 +16,8 @@ enum Category { WEAPONS, MATERIALS, FOOD, MISC }
 @export var category := Category.MISC
 @export var weight := 0.5      # kilograms, counted against the player's carry limit
 @export_multiline var description := ""
+## Hit points eating one restores (food); 0 = can't be eaten.
+@export var heal := 0
 ## The scene to spawn when this is dropped, equipped or previewed. A file path
 ## rather than a PackedScene reference, because the scene also refers back to
 ## this resource and Godot can't load two resources that point at each other.

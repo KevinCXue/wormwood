@@ -9,8 +9,10 @@ extends Node3D
 ## characters/humanoid.tscn, ...) must provide:
 ##
 ##   update_pose(speed, on_floor, delta)  animate for this frame
-##   start_swing() / is_swinging()        the attack animation
-##   strike_time                          seconds into a swing when it lands
+##   start_swing(punch) / is_swinging()   the attack animation (punch = no weapon)
+##   strike_time                          seconds into the current swing when it lands
+##   flinch()                             recoil when hit
+##   die(instant)                         fall down dead (instant: already lying)
 ##   carry_socket / weapon_socket         nodes held items are parented to
 ##   holding / equipped                   flags: carrying something / weapon out
 ##   place_carried(item) / place_equipped(item)  put a held item in the hand
@@ -64,8 +66,16 @@ func update_pose(speed: float, on_floor: bool, delta: float) -> void:
 	body.update_pose(speed, on_floor, delta)
 
 
-func start_swing() -> void:
-	body.start_swing()
+func start_swing(punch := false) -> void:
+	body.start_swing(punch)
+
+
+func flinch() -> void:
+	body.flinch()
+
+
+func die(instant := false) -> void:
+	body.die(instant)
 
 
 func is_swinging() -> bool:

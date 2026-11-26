@@ -18,6 +18,10 @@ as a way to learn game development. "Wormwood" is a working codename.
 - Branching conversations, quests and a journal. Tobin the woodcutter needs
   mushrooms from a cave in the woods for a birthday stew.
 - Save anywhere (F5), with autosaves; the game carries on where you left off.
+- Combat: punch, or swing a sword or axe. Villagers fight back or run, and
+  anyone nearby who sees it joins in; guards draw swords. People die (and
+  stay dead), quests fail if their giver dies, and you can die too. Health
+  comes back slowly, faster if you eat.
 - Equip a sword or an axe and swing it. Chop down trees with the axe for
   logs; knock the stuffing out of straw training dummies with either.
 
@@ -41,7 +45,7 @@ Planned: the main questline, villager routines and other RPG systems.
 | Hold E | Carry it in your hand (E again drops it); for a weapon, equip it |
 | I / Tab | Inventory (E equip, F favourite, R drop, Esc close) |
 | Hold Q | Favourites wheel: move the mouse to pick, release to use (right click removes) |
-| Left click | Swing the equipped weapon or tool |
+| Left click | Swing the equipped weapon or tool, or punch with an empty hand |
 | F | Toggle first / third person |
 | Mouse wheel | Zoom (scroll all the way in for first person) |
 | Hold T | Fast-forward time |

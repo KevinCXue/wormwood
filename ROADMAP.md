@@ -158,7 +158,10 @@ that hints at the fallen star, and bring it back.
 - [ ] **Enemies v1:** health, damage both ways, death, and an AI state machine
       (idle, patrol, chase, attack, flee), with 2 enemy types (an animal and a
       humanoid).
-- [ ] **Player health and dying:** a health bar, death, and reloading.
+- [x] **Player health and dying:** a health bar, death, and reloading.
+      *(Pulled forward into Milestone 1: the lore needs combat. Also done:
+      villagers who fight or flee, witnesses, guards with swords, punches,
+      deaths that stick, quests that fail, regen and eating.)*
 - [ ] **Loot:** containers and things that enemies drop.
 - [ ] **A map and compass** that only show places you've discovered.
 
@@ -271,3 +274,9 @@ Settled choices, newest last. Change one only on purpose, and say why here.
 | 2026-11 | The title screen is an overlay on the real world (orbiting camera), not a separate scene; nothing saves while it's up | "New game" is instant; an untouched world can't overwrite saves |
 | 2026-11 | Esc opens a pause menu instead of quitting; quitting (and quitting to title) autosaves | No surprise saves or exits |
 | 2026-11 | A developer console (backtick) in debug builds, documented in docs/console.md rather than in game | Fast testing; players never see it |
+| 2026-11 | Combat pulled forward. Health: player 40, men 20, women 10 (per-villager overrides); damage: sword 10, axe 8, fist 3 | The planned lore needs combat |
+| 2026-11 | Villagers react by default by body type (men fight, women flee), overridable per villager (`reaction`); guards fight with swords | User's design; overrides keep it flexible (the guard captain fights) |
+| 2026-11 | Only the player's attacks raise the alarm; witnesses within 10 m | Villagers defending themselves shouldn't set the town on each other |
+| 2026-11 | Deaths are permanent and saved; a quest giver's death fails their quests | Consequences |
+| 2026-11 | Healing: slow regen after 10 s out of combat, plus eating food | Fights matter, but you're never stuck hurt |
+| 2026-11 | No saving while dead (autosave included) | A dead player can never overwrite progress |

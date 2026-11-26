@@ -98,6 +98,8 @@ func _use_slot() -> void:
 			_interactor.unequip()
 		else:
 			_interactor.equip(data)
+	elif data.heal > 0:
+		get_parent().eat(data)  # food on the wheel: eat it
 	else:
 		_interactor.hold(data)
 
@@ -142,7 +144,7 @@ func _refresh() -> void:
 	elif _slot >= 0 and _slot < favourites.size():
 		var data: ItemData = favourites[_slot]
 		_centre_name.text = data.display_name
-		var verb := "Put away" if data == _inventory.equipped else ("Equip" if data.is_equipable() else "Hold")
+		var verb := "Put away" if data == _inventory.equipped else ("Equip" if data.is_equipable() else ("Eat" if data.heal > 0 else "Hold"))
 		_centre_hint.text = ("%s: release Q" % verb if _inventory.count_of(data) > 0 else "None in your bag") \
 			+ "\nRight click: remove"
 	else:

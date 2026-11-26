@@ -27,7 +27,10 @@ extends Node3D
 ##         -> talk     (arms and upper spine only: chatting gestures, see apply_look)
 ##         -> carry    (left arm only: hold it out, from "Idle_Torch")
 ##         -> ready    (right arm only: weapon held ready, "Sword_Idle")
-##         -> swing    (upper body only: one-shot "Sword_Attack")
+##         -> flinch   (upper body only: one-shot "Hit_Chest" when hit)
+##         -> swing    (upper body only: one-shot "Sword_Attack", or
+##                      "Punch_Jab" for an unarmed punch)
+##         -> dead     (whole body: "Death01", held on its last frame)
 ##         -> output
 ##
 ##     "Filters" restrict a node to some bones. That's how the swing plays on
@@ -90,6 +93,8 @@ const SPRINT_SPEED := 8.25
 @export_range(0.0, 1.0) var stance_narrowing := 0.6
 @export_range(0.0, 1.0) var talk_strength := 0.6  # how much of the talking clip's arm gestures show (0 = none, 1 = full clip)
 @export var strike_point := 0.4   # seconds into Sword_Attack (at speed 1) when the blade passes in front
+@export var punch_speed := 1.3    # Punch_Jab playback speed
+@export var punch_strike_point := 0.3  # seconds into Punch_Jab (at speed 1) when the fist lands
 
 @export_group("Hands")
 ## How the equipped item sits in the right hand, relative to the hand bone.
@@ -111,8 +116,10 @@ const SPRINT_SPEED := 8.25
 
 var holding := false
 var equipped := false
-var strike_time: float:
-	get: return strike_point / attack_speed
+var strike_time: float:  # of the current (or last) swing
+	get: return punch_strike_point / punch_speed if _punching else strike_point / attack_speed
+var _punching := false
+var _dead := false
 var carry_socket: BoneAttachment3D   # left hand
 var weapon_socket: BoneAttachment3D  # right hand
 
@@ -165,6 +172,8 @@ func update_pose(speed: float, on_floor: bool, delta: float) -> void:
 	var k := 1.0 - exp(-10.0 * delta)
 	# Between the clips' speeds the blend itself moves at the right speed;
 	# beyond a sprint, play the sprint faster.
+	if _dead:
+		return  # lying still; the death clip holds its last frame
 	_tree.set("parameters/move/blend_position", minf(speed, SPRINT_SPEED))
 	_tree.set("parameters/move_rate/scale", maxf(1.0, speed / SPRINT_SPEED))
 	# Fades out as soon as the character starts walking, so the gait is untouched.
@@ -180,9 +189,37 @@ func update_pose(speed: float, on_floor: bool, delta: float) -> void:
 	_keep_feet_on_ground(on_floor, delta)
 
 
-func start_swing() -> void:
-	if _tree and not is_swinging():
-		_tree.set("parameters/swing/request", AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE)
+## Swing the weapon, or punch with an empty hand (punch = true).
+func start_swing(punch := false) -> void:
+	if _tree == null or is_swinging() or _dead:
+		return
+	_punching = punch
+	# The swing slot plays one clip; pick which before firing it.
+	var graph := _tree.tree_root as AnimationNodeBlendTree
+	(graph.get_node("attack") as AnimationNodeAnimation).animation = "Punch_Jab" if punch else "Sword_Attack"
+	_tree.set("parameters/attack_rate/scale", punch_speed if punch else attack_speed)
+	_tree.set("parameters/swing/request", AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE)
+
+
+## A quick recoil when hit (upper body, over whatever else is playing).
+func flinch() -> void:
+	if _tree and not _dead:
+		_tree.set("parameters/flinch/request", AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE)
+
+
+## Fall down dead and stay down. `instant` (restoring a save) skips straight
+## to lying on the ground.
+func die(instant := false) -> void:
+	if _character == null:
+		_build_default()
+	_dead = true
+	_look_target = null
+	for modifier in [_look, _ik, _grip]:  # no head turning or arm IK on a body
+		if modifier:
+			modifier.influence = 0.0
+	var length: float = _animations().get_animation("Death01").length
+	_tree.set("parameters/death_seek/seek_request", length - 0.01 if instant else 0.0)
+	_tree.set("parameters/dead/blend_amount", 1.0)
 
 
 func is_swinging() -> bool:
@@ -319,6 +356,8 @@ static func _animations() -> AnimationLibrary:
 		scene.free()
 		# Imported as play-once; we hold this pose as long as a weapon is out.
 		_library.get_animation("Sword_Idle").loop_mode = Animation.LOOP_LINEAR
+		for once in ["Death01", "Hit_Chest", "Punch_Jab"]:
+			_library.get_animation(once).loop_mode = Animation.LOOP_NONE  # play once and stop
 	return _library
 
 
@@ -384,10 +423,28 @@ func _setup_tree() -> void:
 	swing.fadeout_time = 0.25
 	_filter(swing, ["spine_01", "spine_02", "spine_03", "neck_01"] + _side_bones("_l") + _side_bones("_r"))
 	graph.add_node("swing", swing)
-	graph.connect_node("swing", 0, "ready")
+
+	graph.add_node("hit", _clip("Hit_Chest"))
+	var flinch := AnimationNodeOneShot.new()
+	flinch.fadein_time = 0.05
+	flinch.fadeout_time = 0.2
+	_filter(flinch, ["spine_01", "spine_02", "spine_03", "neck_01", "Head"] + _side_bones("_l") + _side_bones("_r"))
+	graph.add_node("flinch", flinch)
+	graph.connect_node("flinch", 0, "ready")
+	graph.connect_node("flinch", 1, "hit")
+	graph.connect_node("swing", 0, "flinch")  # (a node must exist before it's wired in)
 	graph.connect_node("swing", 1, "attack_rate")
 
-	graph.connect_node("output", 0, "swing")
+	# Death: a TimeSeek in front of the clip lets die() start it from the
+	# beginning, or jump to the end when a dead body is restored from a save.
+	graph.add_node("death", _clip("Death01"))
+	graph.add_node("death_seek", AnimationNodeTimeSeek.new())
+	graph.connect_node("death_seek", 0, "death")
+	graph.add_node("dead", AnimationNodeBlend2.new())
+	graph.connect_node("dead", 0, "swing")
+	graph.connect_node("dead", 1, "death_seek")
+
+	graph.connect_node("output", 0, "dead")
 	_tree.tree_root = graph
 	_tree.set("parameters/attack_rate/scale", attack_speed)
 	_tree.active = true

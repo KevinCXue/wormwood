@@ -41,7 +41,7 @@ func _ready() -> void:
 
 
 ## Called by combat.gd. `from` is where the attacker stands, `dir` the swing direction.
-func on_hit(_weapon: Equipable, from: Vector3, dir: Vector3) -> void:
+func on_hit(_weapon: Equipable, from: Vector3, dir: Vector3, _attacker: Node3D = null) -> void:
 	if _health <= 0:
 		return  # already in pieces, waiting to reset
 	_health -= 1

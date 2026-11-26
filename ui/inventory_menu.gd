@@ -164,12 +164,18 @@ func _select(data: ItemData) -> void:
 	_description.text = data.description if data else "Your bag is empty."
 	_stats.text = "%s  ·  %.1f kg" % [ItemData.CATEGORY_NAMES[data.category], data.weight] if data else ""
 	var verb := "unequip" if data and data == _inventory.equipped else "equip"
-	_keys.text = ("E  %s      " % verb if data and data.is_equipable() else "") \
+	if data and data.heal > 0:
+		verb = "eat (+%d health)" % data.heal
+	_keys.text = ("E  %s      " % verb if data and (data.is_equipable() or data.heal > 0) else "") \
 		+ "F  favourite      R  drop      Esc  close"
 	_show_preview(data)
 
 
+## E: equip or put away a weapon, or eat food.
 func _toggle_equip() -> void:
+	if _selected and _selected.heal > 0:
+		get_parent().eat(_selected)
+		return
 	if _selected == null or not _selected.is_equipable():
 		return
 	if _selected == _inventory.equipped:

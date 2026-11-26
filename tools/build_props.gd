@@ -251,16 +251,16 @@ func _build_equipables() -> void:
 	# Held head-up and tilted forward, spun 180 degrees so the edge faces forward.
 	var axe_mesh := _extract_mesh("wooden_axe_02", "wooden_axe_02")
 	_make_equipable("axe", "Woodcutter's Axe", 1.3, axe_mesh, script,
-		Vector3(0, -0.19, 0), Vector3(30, 180, 0), "axe")
+		Vector3(0, -0.19, 0), Vector3(30, 180, 0), "axe", 8)
 	# Sword: Poly Haven has none, so we build one (see _make_sword_mesh).
 	var sword_mesh := _make_sword_mesh()
 	_save(sword_mesh, "res://assets/models/generated/sword.res")
 	_make_equipable("sword", "Iron Sword", 1.2, load("res://assets/models/generated/sword.res"), script,
-		Vector3(0, 0.12, 0), Vector3(-35, 0, 0), "blade")
+		Vector3(0, 0.12, 0), Vector3(-35, 0, 0), "blade", 10)
 
 
 func _make_equipable(item_name: String, display: String, mass: float, mesh: Mesh,
-		script: Script, grip: Vector3, hold_deg: Vector3, kind: String) -> void:
+		script: Script, grip: Vector3, hold_deg: Vector3, kind: String, damage: int) -> void:
 	var body := RigidBody3D.new()
 	body.name = item_name.to_pascal_case()
 	body.set_script(script)
@@ -268,6 +268,7 @@ func _make_equipable(item_name: String, display: String, mass: float, mesh: Mesh
 	body.set("grip", grip)
 	body.set("hold_rotation_deg", hold_deg)
 	body.set("kind", kind)
+	body.set("damage", damage)
 	body.mass = mass
 	_attach_data(body, item_name, display, mass)
 	_add_mesh_and_shape(body, mesh, mesh.create_convex_shape(true, true))

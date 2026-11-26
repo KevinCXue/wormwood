@@ -74,7 +74,9 @@ func _refresh() -> void:
 			row.set_text(0, quest.title)
 			row.set_metadata(0, quest)
 			if group[0] == "Completed":
-				row.set_custom_color(0, Color(0.85, 0.82, 0.75, 0.6))
+				var failed: bool = _log.is_failed(quest.id())
+				row.set_text(0, quest.title + ("   (failed)" if failed else ""))
+				row.set_custom_color(0, Color(0.88, 0.5, 0.45, 0.8) if failed else Color(0.85, 0.82, 0.75, 0.6))
 			if first == null:
 				first = row
 			if quest == _selected:
@@ -93,5 +95,6 @@ func _show(quest: QuestData) -> void:
 	_giver.text = ("From %s" % quest.giver if quest.giver else "") if has else ""
 	_summary.text = quest.summary if has else "People around town may need a hand. Look for a speech bubble over their heads."
 	_objective_heading.visible = has
-	_objective_heading.text = "Done" if has and _log.is_done(quest.id()) else "Objective"
+	_objective_heading.text = ("Failed" if _log.is_failed(quest.id()) else "Done") \
+		if has and _log.is_done(quest.id()) else "Objective"
 	_objective.text = _log.objective(quest.id()) if has else ""

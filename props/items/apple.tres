@@ -7,5 +7,6 @@ script = ExtResource("1_x20w1")
 display_name = "Apple"
 category = 2
 weight = 0.15
+heal = 5
 description = "A crisp red apple."
 scene_path = "res://props/items/apple.tscn"

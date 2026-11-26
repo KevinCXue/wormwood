@@ -242,7 +242,7 @@ func _find_target() -> Node3D:
 	var distance := eyes.distance_to(hit.position)
 	if hit.collider is Item and distance <= reach:
 		return hit.collider
-	if hit.collider is Npc and distance <= talk_reach:
+	if hit.collider is Npc and distance <= talk_reach and hit.collider.can_talk():
 		return hit.collider
 	return null  # nothing usable, or in view but too far away
 

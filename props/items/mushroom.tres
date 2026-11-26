@@ -7,5 +7,6 @@ script = ExtResource("1_vd4v6")
 display_name = "Cave Mushroom"
 category = 2
 weight = 0.1
+heal = 2
 description = "A pale cave mushroom with a faint glow. Smells earthy."
 scene_path = "res://props/items/mushroom.tscn"

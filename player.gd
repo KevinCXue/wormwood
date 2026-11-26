@@ -17,6 +17,17 @@ extends CharacterBody3D
 @onready var _camera_rig: Node3D = $CameraRig
 @onready var _model: BodySlot = $Model  # holds the body (characters/body_slot.gd)
 @onready var _inventory: Node = $Inventory  # the bag (inventory/inventory.gd)
+@onready var health: Health = $Health        # 40 hit points (combat/health.gd)
+@onready var _hud: CanvasLayer = $HUD
+
+@export_group("Health")
+@export var regen_delay := 10.0     # seconds without being hurt before health creeps back
+@export var regen_interval := 2.0   # seconds per point regained
+@export var game_over_delay := 2.5  # seconds between falling and the death screen
+@export_group("")
+
+var _since_hurt := 0.0
+var _regen_timer := 0.0
 
 # Read gravity from Project Settings so it matches the physics engine.
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -35,6 +46,8 @@ func _ready() -> void:
 	# get_tree().get_first_node_in_group("player") instead of a fixed path.
 	add_to_group("player")
 	add_to_group("persist")  # saved by save/save_game.gd (see save_state below)
+	health.died.connect(_on_died)
+	health.changed.connect(func(h, m): _hud.set_health(h, m))
 	_spawn_point = global_position
 	_move_speed = speed
 	# Set up the controls in code, so you can see exactly what they are.
@@ -63,6 +76,12 @@ func _physics_process(delta: float) -> void:
 	# 1. Gravity: pull the character down while it's in the air.
 	if not is_on_floor():
 		velocity.y -= gravity * delta
+	if health.is_dead():
+		velocity.x = 0.0
+		velocity.z = 0.0
+		move_and_slide()  # a body still falls, but does nothing else
+		return
+	_regenerate(delta)
 
 	# 2. Jump: only allowed when standing on something.
 	if Input.is_action_just_pressed("jump") and is_on_floor() and not locked:
@@ -121,6 +140,51 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector3.ZERO
 
 
+# --- Health -----------------------------------------------------------------------
+
+## The hittable contract (see combat.gd): a villager hits you with `weapon`
+## (null = a fist).
+func on_hit(weapon: Equipable, _from: Vector3, dir: Vector3, attacker: Node3D = null) -> void:
+	if health.is_dead():
+		return
+	health.damage(Health.damage_from(weapon), attacker)
+	_since_hurt = 0.0
+	_model.flinch()
+	HitFx.burst(self, global_position + Vector3.UP * 1.2, Color(0.55, 0.06, 0.05), dir, 10, 0.025, 2.0)
+	_hud.flash_hurt()
+	if attacker is Npc:
+		_hud.show_target(attacker.display_name, attacker.health)
+
+
+## Eat one of `data` from the bag (food: ItemData.heal > 0). Returns whether
+## anything was eaten.
+func eat(data: ItemData) -> bool:
+	if data.heal <= 0 or health.is_dead() or _inventory.remove(data, 1) == 0:
+		return false
+	health.heal(data.heal)
+	_hud.show_note("Ate %s  (+%d health)" % [data.display_name, data.heal])
+	return true
+
+
+## Out of combat for regen_delay seconds: a point back every regen_interval.
+func _regenerate(delta: float) -> void:
+	_since_hurt += delta
+	if _since_hurt < regen_delay or health.health >= health.max_health:
+		return
+	_regen_timer += delta
+	if _regen_timer >= regen_interval:
+		_regen_timer = 0.0
+		health.heal(1)
+
+
+func _on_died(_attacker: Node) -> void:
+	locked = true
+	SaveGame.blocked = true  # no autosave of a dead player
+	_model.die()
+	await get_tree().create_timer(game_over_delay).timeout
+	$GameOver.show_screen()
+
+
 ## Where you are and how you're looking (save/save_game.gd).
 func save_state() -> Dictionary:
 	return {
@@ -130,10 +194,12 @@ func save_state() -> Dictionary:
 		"camera_pitch": _camera_rig.get_node("SpringArm3D").rotation.x,
 		"camera_distance": _camera_rig.third_person_distance,
 		"first_person": _camera_rig.first_person,
+		"health": health.health,
 	}
 
 
 func load_state(state: Dictionary) -> void:
+	health.reset(health.max_health, int(state.get("health", health.max_health)))
 	global_position = SaveGame.array_to_vector(state.position)
 	velocity = Vector3.ZERO
 	_model.rotation.y = state.get("body_yaw", 0.0)

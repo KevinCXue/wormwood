@@ -16,3 +16,5 @@ extends Item
 ## What it's good for. Things that get hit decide how to react: trees only
 ## take damage from "axe"; straw dummies take damage from anything.
 @export_enum("blade", "axe") var kind := "blade"
+## Hit points a hit takes off a person (a bare fist does 3, see combat/health.gd).
+@export var damage := 10

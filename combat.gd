@@ -1,13 +1,16 @@
 extends Node
-## Swinging the equipped weapon/tool (left mouse button). A child of Player.
+## Swinging the equipped weapon/tool, or punching with an empty hand (left
+## mouse button). A child of Player.
 ##
-## A swing is: play the body's swing animation, wait until the blade
+## A swing is: play the body's swing (or punch) animation, wait until it
 ## would connect (strike_time), then look for things in a sphere in front of
 ## the chest. Anything there with an on_hit() method gets told it was hit;
 ## loose items get knocked about.
 ##
 ## "Duck typing": we don't care what class a thing is, only whether it has
-## on_hit(). Straw dummies and trees each implement it their own way.
+## on_hit(weapon, from, dir, attacker). Straw dummies, trees, villagers and the
+## player each implement it their own way; weapon is null for a punch. Damage
+## to people is the weapon's `damage` (combat/health.gd: Health.damage_from).
 
 @export var hit_radius := 0.75    # size of the hit sphere, metres
 @export var hit_distance := 1.1   # how far in front of the chest it sits
@@ -31,13 +34,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _swing() -> void:
-	var weapon: Equipable = _interactor.get_equipped()
-	if weapon == null or _model.is_swinging():
+	var weapon: Equipable = _interactor.get_equipped()  # null = punch
+	if _model.is_swinging() or _player.get_node("Health").is_dead():
 		return
 	# Swing where you're looking: in third person the body may be facing
 	# elsewhere (it faces the way it last walked), so turn it first.
 	_model.rotation.y = _rig.rotation.y
-	_model.start_swing()
+	_model.start_swing(weapon == null)
 	# `await` pauses this function until the timer fires, without blocking
 	# the game. Everything else keeps running meanwhile.
 	await get_tree().create_timer(_model.strike_time).timeout
@@ -63,7 +66,7 @@ func _strike(weapon: Equipable) -> void:
 			best = body
 			best_dist = d
 	if best:
-		best.on_hit(weapon, _player.global_position, forward)
+		best.on_hit(weapon, _player.global_position, forward, _player)
 
 
 ## Physics bodies on the given collision layer that overlap the hit sphere.

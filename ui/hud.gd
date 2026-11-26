@@ -1,7 +1,9 @@
 extends CanvasLayer
 ## On-screen overlay: the crosshair, the "E  Take Brass Goblet" prompt, short
 ## notes ("Apple added"), big banners for quests ("NEW QUEST / Suspicious
-## Stew") and subtitles for what villagers say.
+## Stew"), subtitles for what villagers say, and combat: your health bar
+## (bottom left; it fades away a few seconds after you're back to full), a red
+## flash when you're hit, and the health of whoever you're fighting (top).
 ##
 ## A CanvasLayer draws 2D UI on top of the 3D view, unaffected by the camera.
 ## The layout lives in hud.tscn (open it to tweak positions, sizes and colours
@@ -23,6 +25,21 @@ extends CanvasLayer
 @export var banner_fade_out := 1.2  # seconds
 
 var _banner_tween: Tween
+
+@onready var _health: Control = $Root/Health
+@onready var _health_text: Label = $Root/Health/Text
+@onready var _health_fill: ColorRect = $Root/Health/Bar/Fill
+@onready var _hurt: ColorRect = $Root/Hurt
+@onready var _target: Control = $Root/Target
+@onready var _target_name: Label = $Root/Target/Name
+@onready var _target_fill: ColorRect = $Root/Target/Bar/Fill
+
+@export var health_linger := 4.0  # seconds the bar stays after you're back to full
+@export var target_linger := 5.0  # seconds the enemy's bar stays after the last blow
+
+var _full_for := 0.0
+var _target_health: Health = null
+var _target_left := 0.0
 @onready var _subtitle: Control = $Root/Subtitle
 @onready var _speaker: Label = $Root/Subtitle/Speaker
 @onready var _line: Label = $Root/Subtitle/Line
@@ -85,6 +102,28 @@ func show_banner(heading: String, title: String, hint := "") -> void:
 	_banner_tween.tween_callback(func(): _banner.visible = false)
 
 
+## Your health changed: update the bar and show it.
+func set_health(health: int, max_health: int) -> void:
+	_health_text.text = "Health  %d / %d" % [health, max_health]
+	_health_fill.anchor_right = float(health) / max_health
+	_health.modulate.a = 1.0
+	_full_for = 0.0
+
+
+## A red flash over the screen when you're hit.
+func flash_hurt() -> void:
+	_hurt.color.a = 0.35
+	create_tween().tween_property(_hurt, "color:a", 0.0, 0.5)
+
+
+## Show who you're fighting and their health, for a few seconds.
+func show_target(target_name: String, health: Health) -> void:
+	_target_name.text = target_name
+	_target_health = health
+	_target_left = target_linger
+	_target.visible = true
+
+
 ## A short message under the prompt that fades after a moment.
 func show_note(text: String) -> void:
 	_note.text = text
@@ -94,6 +133,7 @@ func show_note(text: String) -> void:
 
 
 func _process(delta: float) -> void:
+	_update_combat_bars(delta)
 	if _subtitle.visible:
 		_line_time_left -= delta
 		# Fade over the last 0.4 seconds.
@@ -105,3 +145,18 @@ func _process(delta: float) -> void:
 		_note.modulate.a = clampf(_note_time_left / 0.4, 0.0, 1.0)
 		if _note_time_left <= 0.0:
 			_note.visible = false
+
+
+func _update_combat_bars(delta: float) -> void:
+	# Your bar: fade it away once you've been at full health for a while.
+	if _health_fill.anchor_right >= 0.999:
+		_full_for += delta
+		if _full_for > health_linger:
+			_health.modulate.a = maxf(_health.modulate.a - delta * 2.0, 0.0)
+	# The enemy's bar follows their health until it times out.
+	if _target.visible:
+		_target_left -= delta
+		if _target_health and is_instance_valid(_target_health):
+			_target_fill.anchor_right = float(_target_health.health) / _target_health.max_health
+		if _target_left <= 0.0:
+			_target.visible = false
