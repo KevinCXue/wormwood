@@ -53,7 +53,7 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	# _input sees keys before the UI does, so E/F/R work whatever has focus.
 	if not visible:
-		if event.is_action_pressed("inventory") and not get_tree().paused and not get_parent().in_dialogue:
+		if event.is_action_pressed("inventory") and not get_tree().paused and not get_parent().locked:
 			_open()
 			get_viewport().set_input_as_handled()
 		return

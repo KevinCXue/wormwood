@@ -41,9 +41,10 @@ const SYSTEM := {
 		["F5", "Save (the newest 50 are kept)"],
 		["F9", "Load a save"],
 		["H", "This help"],
-		["Esc", "Close a menu, or quit (autosaves first)"],
+		["Esc", "Pause menu (save, load, quit); closes other menus"],
 	],
 	"In menus": [
+		["W / S", "Move up and down (arrow keys too); Enter picks"],
 		["E", "Inventory: equip or put away a weapon"],
 		["F", "Inventory: add to or remove from the wheel"],
 		["R", "Inventory: drop one"],
@@ -60,6 +61,8 @@ const SYSTEM := {
 @onready var _system_column: VBoxContainer = $Root/Panel/VBox/Columns/System
 @onready var _keycap_style: StyleBox = preload("res://ui/keycap_style.tres")
 
+var _return_to := Callable()  # set when opened from another menu (open())
+
 
 func _ready() -> void:
 	_fill(_player_column, "Player", PLAYER)
@@ -68,13 +71,20 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	if not visible:
-		if event.is_action_pressed("help") and not get_tree().paused and not get_parent().in_dialogue:
+		if event.is_action_pressed("help") and not get_tree().paused and not get_parent().locked:
 			_open()
 			get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed("help") or event.is_action_pressed("ui_cancel"):
 		_close()
 		get_viewport().set_input_as_handled()
+
+
+## Open from another menu (title screen, pause menu): closing it then calls
+## `return_to` instead of resuming the game.
+func open(return_to: Callable) -> void:
+	_return_to = return_to
+	_open()
 
 
 func _open() -> void:
@@ -85,6 +95,11 @@ func _open() -> void:
 
 func _close() -> void:
 	visible = false
+	if _return_to.is_valid():
+		var back := _return_to
+		_return_to = Callable()
+		back.call()  # back to the menu that opened us; it stays paused
+		return
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 

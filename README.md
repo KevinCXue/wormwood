@@ -51,7 +51,8 @@ Planned: the main questline, villager routines and other RPG systems.
 | H | Help: every control, on one page |
 | F5 | Save (a new save each time; the newest 50 are kept, plus 3 autosaves) |
 | F9 | List of saves: Enter loads, Delete twice deletes |
-| Esc | Quit (autosaves first; the next start carries on from the newest save) |
+| W / S, Enter | In menus and lists: move up and down (arrow keys too), pick |
+| Esc | Pause menu: resume, save, load, controls, new game, quit to title, quit (quitting autosaves first) |
 
 ## Project layout
 

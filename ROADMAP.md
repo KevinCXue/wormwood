@@ -88,7 +88,10 @@ Systems this forces into existence, roughly in build order:
       (5 mushrooms from a new cave north-west of town, 15 gold).
 - [ ] **Currency:** 🔨 quests can pay gold now (Tobin gives 15); still
       nothing to spend it on (shops are Milestone 2) and no world source.
-- [ ] **Title screen and pause menu:** new game, continue, save, quit.
+- [x] **Title screen and pause menu:** the title shows over the live
+      world (Continue, New game, Load, Controls, Quit) and never saves; Esc
+      opens a pause menu (Resume, Save, Load, Controls, New game with a
+      confirmation, Quit to title, Quit game).
 - [ ] **The quest itself:** Anselm's job, built entirely from the data
       formats above (no quest-specific code), including the choice and the
       time-of-day reaction.
@@ -265,3 +268,6 @@ Settled choices, newest last. Change one only on purpose, and say why here.
 | 2026-11 | Quests are `QuestData` resources keyed by file name; started only by talking to someone | Content as data; no quest-specific code |
 | 2026-11 | Quest markers are speech bubbles: gold ! new, grey ▶ in progress, gold ▶ ready to hand in | Readable at a glance |
 | 2026-11 | Conversations don't pause the game; they lock the player (no moving, swinging or menus) | Villagers keep breathing; the clock keeps going |
+| 2026-11 | The title screen is an overlay on the real world (orbiting camera), not a separate scene; nothing saves while it's up | "New game" is instant; an untouched world can't overwrite saves |
+| 2026-11 | Esc opens a pause menu instead of quitting; quitting (and quitting to title) autosaves | No surprise saves or exits |
+| 2026-11 | A developer console (backtick) in debug builds, documented in docs/console.md rather than in game | Fast testing; players never see it |

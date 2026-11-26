@@ -96,7 +96,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed("interact") or _player.in_dialogue:
+	if not event.is_action_pressed("interact") or _player.locked:
 		return
 	if _npc and _npc.dialogue_file != "":
 		_dialogue.start(_npc)  # a conversation with choices
@@ -300,7 +300,7 @@ func _place_equipped() -> void:
 
 
 func _update_hud() -> void:
-	if _player.in_dialogue:
+	if _player.locked:
 		_hud.hide_prompt()
 	elif _npc:
 		_hud.show_prompt("Talk", _npc.display_name, false)

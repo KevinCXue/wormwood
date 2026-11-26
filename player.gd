@@ -21,9 +21,10 @@ extends CharacterBody3D
 # Read gravity from Project Settings so it matches the physics engine.
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
-## True while talking to someone (ui/dialogue_box.gd): no moving, jumping,
-## swinging or opening menus until the conversation ends.
-var in_dialogue := false
+## True while the player shouldn't act: talking to someone (ui/dialogue_box.gd)
+## or on the title screen (ui/title_screen.gd). No moving, jumping, swinging
+## or opening menus until it's false again.
+var locked := false
 
 var _spawn_point := Vector3.ZERO
 var _move_speed := 6.0  # current top speed, eased between `speed` and `sprint_speed`
@@ -50,6 +51,11 @@ func _ready() -> void:
 	_add_action("quick_select", [KEY_Q])  # hold for the favourites wheel (ui/quick_wheel.gd)
 	_add_action("help", [KEY_H])  # the controls screen (ui/help_menu.gd)
 	_add_action("journal", [KEY_J])  # quests (ui/journal.gd)
+	# Menus: Godot's built-in "ui_up"/"ui_down" actions move between buttons
+	# and list rows (arrow keys by default). Add W and S, so every menu works
+	# with the hand already on WASD. (Typing w/s in a text box still types.)
+	_add_key_to_action("ui_up", KEY_W)
+	_add_key_to_action("ui_down", KEY_S)
 	_add_mouse_action("attack", MOUSE_BUTTON_LEFT)  # swing the equipped item (combat.gd)
 
 
@@ -59,14 +65,14 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= gravity * delta
 
 	# 2. Jump: only allowed when standing on something.
-	if Input.is_action_just_pressed("jump") and is_on_floor() and not in_dialogue:
+	if Input.is_action_just_pressed("jump") and is_on_floor() and not locked:
 		velocity.y = jump_velocity
 
 	# 3. Movement: turn the keys into a direction on the ground (X/Z plane).
 	#    get_vector gives x = right, y = back (so W is -y, matching Godot's
 	#    convention that "forward" is -Z).
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	if in_dialogue:
+	if locked:
 		input_dir = Vector2.ZERO  # stand still while talking
 	var direction := Vector3(input_dir.x, 0.0, input_dir.y)
 	# Make it camera-relative: spin the direction by the camera's yaw, so W
@@ -145,6 +151,15 @@ func _add_mouse_action(action: String, button: MouseButton) -> void:
 	InputMap.add_action(action)
 	var event := InputEventMouseButton.new()
 	event.button_index = button
+	InputMap.action_add_event(action, event)
+
+
+func _add_key_to_action(action: String, key: Key) -> void:
+	for existing in InputMap.action_get_events(action):
+		if existing is InputEventKey and existing.physical_keycode == key:
+			return  # already added (the player is re-created on every load)
+	var event := InputEventKey.new()
+	event.physical_keycode = key
 	InputMap.action_add_event(action, event)
 
 

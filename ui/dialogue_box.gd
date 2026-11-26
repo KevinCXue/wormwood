@@ -8,7 +8,7 @@ extends CanvasLayer
 ## Choices: Up/Down (or W/S) move, Enter/E picks, 1-9 pick directly, or click.
 ##
 ## The game keeps running (villagers breathe, the clock ticks), but the player
-## can't move, swing or open menus: player.gd checks `in_dialogue`. The
+## can't move, swing or open menus: player.gd checks `locked`. The
 ## script's conditions and effects (has, take, gold, start_quest...) are
 ## carried out here, against the Inventory and the QuestLog.
 
@@ -44,7 +44,7 @@ func start(npc: Npc) -> void:
 		return  # a broken script; the errors were printed when it loaded
 	_npc = npc
 	npc.begin_conversation()
-	_player.in_dialogue = true
+	_player.locked = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE  # for clicking choices
 	_hud.hide_line()
 	visible = true
@@ -53,7 +53,7 @@ func start(npc: Npc) -> void:
 
 func _end() -> void:
 	visible = false
-	_player.in_dialogue = false
+	_player.locked = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if _npc:
 		_npc.end_conversation()

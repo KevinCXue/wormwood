@@ -18,6 +18,7 @@ const HINT := "Enter  load      Delete  delete      Esc  close"
 
 var _saves: Array = []
 var _confirm_delete := -1  # row waiting for a second Delete press
+var _return_to := Callable()  # set when opened from another menu (open())
 
 
 func _ready() -> void:
@@ -31,7 +32,7 @@ func _input(event: InputEvent) -> void:
 	var f9: bool = event is InputEventKey and event.pressed and not event.echo \
 		and event.physical_keycode == KEY_F9
 	if not visible:
-		if f9 and not get_tree().paused and not get_parent().in_dialogue:
+		if f9 and not get_tree().paused and not get_parent().locked:
 			_open()
 			get_viewport().set_input_as_handled()
 		return
@@ -45,6 +46,13 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
+## Open from another menu (title screen, pause menu): closing it then calls
+## `return_to` instead of resuming the game.
+func open(return_to: Callable) -> void:
+	_return_to = return_to
+	_open()
+
+
 func _open() -> void:
 	visible = true
 	get_tree().paused = true
@@ -55,6 +63,11 @@ func _open() -> void:
 
 func _close() -> void:
 	visible = false
+	if _return_to.is_valid():
+		var back := _return_to
+		_return_to = Callable()
+		back.call()  # back to the menu that opened us; it stays paused
+		return
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 

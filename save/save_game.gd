@@ -12,8 +12,11 @@ extends Node
 ##   manual  F5 (main.gd). A new file every time; past MAX_SAVES the oldest goes.
 ##   auto    every AUTOSAVE_MINUTES of play and when quitting, in MAX_AUTOSAVES
 ##           rotating files, so they never push out your own saves.
-## Starting the game loads the newest save of either kind (unless run with
-## `-- --new-game`).
+## Starting the game shows the title screen (ui/title_screen.gd) over the
+## world; nothing is saved while it's up (`on_title`), so an untouched world
+## can't overwrite your progress. Run with `-- --new-game` to skip it and start
+## fresh, or `-- --continue` to skip it and load the newest save. Tool and test
+## scripts (`-s`) never show it.
 ##
 ## What gets saved:
 ##   - every node in the "persist" group that has save_state() -> Dictionary
@@ -43,7 +46,10 @@ var save_dir := "user://saves"  # tests point this elsewhere: -- --save-dir=user
 
 var _world: Node = null
 var _pending := {}         # a save waiting for the world to finish (re)loading
-var _first_world := true   # the first world of this run loads the latest save
+var _first_world := true   # the first world of this run shows the title screen
+var _title_next := false   # "Quit to title": show the title after the reload
+## True while the title screen is up: no autosaves (ui/title_screen.gd).
+var on_title := false
 var _autosave_left := AUTOSAVE_MINUTES * 60.0
 
 
@@ -60,23 +66,28 @@ func world_ready(world: Node) -> void:
 	_autosave_left = AUTOSAVE_MINUTES * 60.0
 	var state := _pending
 	_pending = {}
-	# Only a real start of the game continues: tool and test scripts run with
-	# `-s`, which gives the SceneTree itself a script.
+	# Only a real start of the game shows the title: tool and test scripts run
+	# with `-s`, which gives the SceneTree itself a script.
 	var real_game: bool = get_tree().get_script() == null
-	if state.is_empty() and _first_world and real_game \
-			and not "--new-game" in OS.get_cmdline_user_args():
-		var saves := list_saves()
-		if not saves.is_empty():
-			print("continuing from ", saves[0].path)
-			state = read_save(saves[0].path)
+	var args := OS.get_cmdline_user_args()
+	on_title = false
+	if state.is_empty() and (_title_next or (_first_world and real_game)):
+		if _first_world and "--continue" in args:
+			var saves := list_saves()
+			if not saves.is_empty():
+				print("continuing from ", saves[0].path)
+				state = read_save(saves[0].path)
+		elif _title_next or not "--new-game" in args:
+			on_title = true  # the title screen sees this and shows itself
 	_first_world = false
+	_title_next = false
 	if not state.is_empty():
 		_apply(state)
 
 
 func _process(delta: float) -> void:
 	# Autoloads pause with the tree, so menus stop this clock.
-	if _world == null or not is_instance_valid(_world):
+	if _world == null or not is_instance_valid(_world) or on_title:
 		return
 	_autosave_left -= delta / maxf(Engine.time_scale, 0.01)  # real seconds, even under the wheel's slow motion
 	if _autosave_left <= 0.0:
@@ -85,7 +96,7 @@ func _process(delta: float) -> void:
 
 func _notification(what: int) -> void:
 	# Closing the window: autosave on the way out.
-	if what == NOTIFICATION_WM_CLOSE_REQUEST and _world and is_instance_valid(_world):
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and _world and is_instance_valid(_world) and not on_title:
 		save("auto")
 
 
@@ -93,7 +104,7 @@ func _notification(what: int) -> void:
 
 ## Write a new save of `kind` ("manual" or "auto"). Returns its path, or "".
 func save(kind := "manual") -> String:
-	if _world == null or not is_instance_valid(_world):
+	if _world == null or not is_instance_valid(_world) or on_title:
 		return ""
 	_autosave_left = AUTOSAVE_MINUTES * 60.0
 	var state := capture(_world)
@@ -209,6 +220,22 @@ func new_game() -> void:
 	get_tree().paused = false
 	Engine.time_scale = 1.0
 	get_tree().reload_current_scene()
+
+
+## Back to the title screen: reload the world and show the title over it.
+## (The pause menu autosaves first.)
+func to_title() -> void:
+	_pending = {}
+	_title_next = true
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	get_tree().reload_current_scene()
+
+
+## Leaving the title screen for a new game in the world that's already there.
+func leave_title() -> void:
+	on_title = false
+	_autosave_left = AUTOSAVE_MINUTES * 60.0
 
 
 ## The current world (main.tscn's root), or null. Used by the console.

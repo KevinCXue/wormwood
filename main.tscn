@@ -25,6 +25,8 @@
 [ext_resource type="Script" path="res://quests/quest_log.gd" id="35_quests"]
 [ext_resource type="PackedScene" path="res://ui/dialogue_box.tscn" id="36_dialogue"]
 [ext_resource type="PackedScene" path="res://ui/journal.tscn" id="37_journal"]
+[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="38_pause"]
+[ext_resource type="PackedScene" path="res://ui/title_screen.tscn" id="39_title"]
 
 [sub_resource type="PhysicalSkyMaterial" id="SkyMat_1"]
 ground_color = Color(0.25, 0.27, 0.22, 1)
@@ -216,3 +218,7 @@ script = ExtResource("16_combat")
 [node name="DialogueBox" parent="Player" instance=ExtResource("36_dialogue")]
 
 [node name="Journal" parent="Player" instance=ExtResource("37_journal")]
+
+[node name="PauseMenu" parent="Player" instance=ExtResource("38_pause")]
+
+[node name="TitleScreen" parent="." instance=ExtResource("39_title")]
