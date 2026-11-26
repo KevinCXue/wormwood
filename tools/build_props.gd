@@ -38,6 +38,23 @@ const TABLES := {
 	"market_table": ["painted_wooden_table", "painted_wooden_table"],
 }
 
+## Inventory data for each item: name -> [category, description]. Written to
+## props/items/<name>.tres (weight = the item's mass) only if that file
+## doesn't exist yet, so edits made in the Inspector are kept.
+const ITEM_INFO := {
+	"plate": [ItemData.Category.MISC, "A plate carved from a single piece of wood."],
+	"bowl": [ItemData.Category.MISC, "A turned wooden bowl."],
+	"goblet": [ItemData.Category.MISC, "A brass goblet, polished by many hands."],
+	"jug": [ItemData.Category.MISC, "A clay jug with a painted flower."],
+	"apple": [ItemData.Category.FOOD, "A crisp red apple."],
+	"candlestick": [ItemData.Category.MISC, "A wooden candlestick, waiting for a candle."],
+	"candle": [ItemData.Category.MISC, "A candle in a wooden holder, burning steadily."],
+	"lantern": [ItemData.Category.MISC, "A wooden lantern. Carry it to light your way."],
+	"axe": [ItemData.Category.WEAPONS, "A woodcutter's axe. Fells trees; does little else well."],
+	"sword": [ItemData.Category.WEAPONS, "A plain iron arming sword."],
+	"log": [ItemData.Category.MATERIALS, "A length of pine trunk, good for building or burning."],
+}
+
 # name -> [model id, mesh node, display name, mass in kg]
 const ITEMS := {
 	"plate": ["carved_wooden_plate", "carved_wooden_plate", "Wooden Plate", 0.4],
@@ -69,6 +86,7 @@ func _initialize() -> void:
 		body.set_script(item_script)
 		body.set("display_name", spec[2])
 		body.mass = spec[3]
+		_attach_data(body, item_name, spec[2], spec[3])
 		# Convex hull = the shape you'd get shrink-wrapping the object. Moving
 		# bodies need convex shapes; "simplify" keeps it to a few dozen faces.
 		_add_mesh_and_shape(body, mesh, mesh.create_convex_shape(true, true))
@@ -76,6 +94,7 @@ func _initialize() -> void:
 
 	_build_equipables()
 	_build_light_items()
+	_build_log()
 	_build_furniture()
 
 	if FileAccess.file_exists(LAYOUT):
@@ -183,6 +202,7 @@ func _make_light_item(item_name: String, display: String, mass: float, mesh: Mes
 	body.set_script(load("res://item.gd"))
 	body.set("display_name", display)
 	body.mass = mass
+	_attach_data(body, item_name, display, mass)
 	_add_mesh_and_shape(body, mesh, mesh.create_convex_shape(true, true))
 	if shadows:
 		# The light sits inside the lantern's cage. If the cage cast shadows,
@@ -247,8 +267,83 @@ func _make_equipable(item_name: String, display: String, mass: float, mesh: Mesh
 	body.set("hold_rotation_deg", hold_deg)
 	body.set("kind", kind)
 	body.mass = mass
+	_attach_data(body, item_name, display, mass)
 	_add_mesh_and_shape(body, mesh, mesh.create_convex_shape(true, true))
 	_pack(body, "%s/%s.tscn" % [ITEM_DIR, item_name])
+
+
+## A pine log (what a felled tree leaves behind): a bark-brown cylinder with
+## pale cut ends. 1 m long, lying along X.
+func _build_log() -> void:
+	var length := 1.0
+	var radius := 0.12
+	var bark := StandardMaterial3D.new()
+	bark.albedo_color = Color(0.28, 0.19, 0.13)  # same as the pines' trunks (build_world.gd)
+	bark.roughness = 1.0
+	var cut := StandardMaterial3D.new()
+	cut.albedo_color = Color(0.86, 0.71, 0.48)   # fresh wood, like the notch on a chopped tree
+	cut.roughness = 0.9
+	var side := CylinderMesh.new()
+	side.top_radius = radius
+	side.bottom_radius = radius
+	side.height = length
+	side.radial_segments = 12
+	side.cap_top = false
+	side.cap_bottom = false
+	var ends := CylinderMesh.new()  # a thin disc, used for both ends
+	ends.top_radius = radius
+	ends.bottom_radius = radius
+	ends.height = 0.002
+	ends.radial_segments = 12
+	# One mesh, two surfaces (bark, cut ends), lying along X.
+	var lie := Basis(Vector3.FORWARD, PI / 2)
+	var mesh := ArrayMesh.new()
+	var st := SurfaceTool.new()
+	st.append_from(side, 0, Transform3D(lie, Vector3.ZERO))
+	st.commit(mesh)
+	mesh.surface_set_material(0, bark)
+	st = SurfaceTool.new()
+	for x in [-length / 2, length / 2]:
+		st.append_from(ends, 0, Transform3D(lie, Vector3(x, 0, 0)))
+	st.commit(mesh)
+	mesh.surface_set_material(1, cut)
+	_save(mesh, "res://assets/models/generated/log.res")
+
+	var body := RigidBody3D.new()
+	body.name = "Log"
+	body.set_script(load("res://item.gd"))
+	body.set("display_name", "Pine Log")
+	body.mass = 4.0
+	_attach_data(body, "log", "Pine Log", 4.0)
+	var shape := CylinderShape3D.new()
+	shape.radius = radius
+	shape.height = length
+	var mi := MeshInstance3D.new()
+	mi.name = "Mesh"
+	mi.mesh = load("res://assets/models/generated/log.res")
+	body.add_child(mi)
+	var cs := CollisionShape3D.new()
+	cs.name = "Collision"
+	cs.shape = shape
+	cs.basis = lie
+	body.add_child(cs)
+	_pack(body, "%s/log.tscn" % ITEM_DIR)
+
+
+## Point an item's `data` at props/items/<name>.tres, writing that file first
+## if it doesn't exist (see ITEM_INFO).
+func _attach_data(body: Node, item_name: String, display: String, mass: float) -> void:
+	var path := "%s/%s.tres" % [ITEM_DIR, item_name]
+	if not ResourceLoader.exists(path):
+		var info: Array = ITEM_INFO[item_name]
+		var data := ItemData.new()
+		data.display_name = display
+		data.category = info[0]
+		data.description = info[1]
+		data.weight = mass
+		data.scene_path = "%s/%s.tscn" % [ITEM_DIR, item_name]
+		_save(data, path)
+	body.set("data", load(path))
 
 
 ## A one-handed arming sword, ~1 m long, built along +Y:

@@ -1,19 +1,21 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://equipable.gd" id="1_6v1js"]
-[ext_resource type="ArrayMesh" path="res://assets/models/generated/sword.res" id="2_h51x5"]
+[ext_resource type="Script" path="res://equipable.gd" id="1_h51x5"]
+[ext_resource type="Resource" path="res://props/items/sword.tres" id="2_qfm2a"]
+[ext_resource type="ArrayMesh" path="res://assets/models/generated/sword.res" id="3_u8yoj"]
 
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_qfm2a"]
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_o2mm6"]
 points = PackedVector3Array(-0.005136501, 0.019970179, -0.031451166, 0.018682836, 0.22851709, 0.10556249, 0.006767335, 0.89555186, 0.022133587, -0.017052002, 0.22851709, 0.10556249, 0.018682836, 0.19875282, -0.10297915, -0.017052002, 0.22851709, -0.10297915, -0.005136501, 0.9909552, -0.007608502, 0.030604169, 0.014056742, 0.010212256, -0.028979167, 0.014056742, 0.016172921, 0.006767335, 0.98494315, 0.0042515895, 0.012728002, 0.0080447495, 0.028094253, -0.028979167, 0.03790757, -0.013569169, -0.005136501, 1.0027821, 0.0042515895, 0.0008125007, 0.89555186, -0.0254905, 0.030604169, 0.014056742, -0.007608502, -0.017052002, 0.19875282, 0.10556249, 0.018682836, 0.22851709, -0.10297915, -0.017052002, 0.19875282, -0.10297915, 0.018682836, 0.19875282, 0.10556249, -0.023018502, 0.0080447495, -0.019529834, 0.024643503, 0.0080447495, -0.019529834, 0.0008125007, 0.9134892, 0.022133587, 0.030604169, 0.03790757, -0.007608502, 0.030604169, 0.03790757, 0.010212256, -0.011097168, -0.0038806796, 0.016172921, 0.006767335, 0.90747726, -0.019529834, -0.028979167, 0.031895578, 0.016172921, -0.017052002, 0.014056742, 0.028094253, 0.012728002, -0.0038806796, -0.013569169, -0.005136501, 0.94916695, 0.016172921, -0.005136501, 0.93132806, -0.019529834, 0.024643503, 0.014056742, 0.022133587)
 
-[node name="Sword" type="RigidBody3D" unique_id=1969696016]
+[node name="Sword" type="RigidBody3D" unique_id=890990236]
 mass = 1.2
-script = ExtResource("1_6v1js")
+script = ExtResource("1_h51x5")
 grip = Vector3(0, 0.12, 0)
+data = ExtResource("2_qfm2a")
 display_name = "Iron Sword"
 
-[node name="Mesh" type="MeshInstance3D" parent="." unique_id=2046137381]
-mesh = ExtResource("2_h51x5")
+[node name="Mesh" type="MeshInstance3D" parent="." unique_id=1353482293]
+mesh = ExtResource("3_u8yoj")
 
-[node name="Collision" type="CollisionShape3D" parent="." unique_id=1124190929]
-shape = SubResource("ConvexPolygonShape3D_qfm2a")
+[node name="Collision" type="CollisionShape3D" parent="." unique_id=459430572]
+shape = SubResource("ConvexPolygonShape3D_o2mm6")

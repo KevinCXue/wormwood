@@ -12,11 +12,12 @@ as a way to learn game development. "Wormwood" is a working codename.
 - Forested hills, a two-storey house you can walk through, and a day/night
   cycle.
 - First- and third-person camera.
-- Pick up and drop items: plates, goblets, apples, lanterns and more.
-- Equip a sword or an axe and swing it. Chop down trees with the axe; knock
-  the stuffing out of straw training dummies with either.
+- An inventory: collect plates, goblets, apples, lanterns and more into your
+  bag (identical items stack, with a weight limit), or carry them by hand.
+- Equip a sword or an axe and swing it. Chop down trees with the axe for
+  logs; knock the stuffing out of straw training dummies with either.
 
-Planned: a village, NPCs, quests, an inventory and other RPG systems.
+Planned: save/load, villager routines, quests and other RPG systems.
 
 ## Running it
 
@@ -32,7 +33,9 @@ Planned: a village, NPCs, quests, an inventory and other RPG systems.
 | Shift (hold) | Run |
 | Mouse | Look |
 | Space | Jump |
-| E | Take, drop or equip what's under the crosshair |
+| E | Take what's under the crosshair into your bag, or talk |
+| Hold E | Carry it in your hand (E again drops it); for a weapon, equip it |
+| I / Tab | Inventory (E equip, F favourite, R drop, Esc close) |
 | Left click | Swing the equipped weapon or tool |
 | F | Toggle first / third person |
 | Mouse wheel | Zoom (scroll all the way in for first person) |

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://inventory/item_data.gd" id="1_go611"]
+
+[resource]
+script = ExtResource("1_go611")
+display_name = "Wooden Plate"
+weight = 0.4
+description = "A plate carved from a single piece of wood."
+scene_path = "res://props/items/plate.tscn"

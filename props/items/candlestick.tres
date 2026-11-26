@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://inventory/item_data.gd" id="1_nbax0"]
+
+[resource]
+script = ExtResource("1_nbax0")
+display_name = "Candlestick"
+description = "A wooden candlestick, waiting for a candle."
+scene_path = "res://props/items/candlestick.tscn"

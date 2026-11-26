@@ -1,18 +1,20 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://item.gd" id="1_c6nyr"]
-[ext_resource type="ArrayMesh" path="res://assets/models/carved_wooden_plate/carved_wooden_plate.res" id="2_e1x3d"]
+[ext_resource type="Script" path="res://item.gd" id="1_e1x3d"]
+[ext_resource type="Resource" path="res://props/items/plate.tres" id="2_okkb7"]
+[ext_resource type="ArrayMesh" path="res://assets/models/carved_wooden_plate/carved_wooden_plate.res" id="3_vfas8"]
 
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_okkb7"]
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_ky0ik"]
 points = PackedVector3Array(0.035092354, -0.0008462695, 0.052218676, -0.030628232, 0.029955883, -0.13902801, -0.11806207, 0.039085712, 0.062812105, 0.13213271, 0.034769736, -0.019132294, 0.028562833, 0.03476551, 0.12754285, -0.062595, -0.0015541165, -0.05217153, 0.052502606, 0.0020527209, -0.060517773, -0.1353057, 0.021826036, -0.05361279, -0.09649402, 0.026142012, 0.084389016, 0.1278083, 0.021826036, 0.05416537, 0.019941019, 0.03476551, -0.14425713, 0.123510905, 0.026142012, -0.06656958, -0.0665325, 0.0022340277, 0.027925055, 0.019941019, 0.021826036, 0.12754285, -0.11373765, 0.030453764, -0.096793234, -0.07060155, 0.021826036, -0.13130033, -0.061952706, 0.039085712, 0.11458606, 0.037211675, 0.026142012, -0.13989386, 0.07629393, 0.0019297001, -0.018064892, -0.02501908, 0.0018908622, -0.08452648, -0.1310083, 0.026142012, 0.041235186, -0.061952706, 0.03476551, -0.13130033, 0.08034778, 0.021826036, 0.110276, 0.11488909, 0.030453764, 0.07574229, -0.13965714, 0.03476551, -0.014795626, -0.020619279, 0.0022788798, 0.062091503, 0.123510905, 0.034769736, -0.06656958, -0.040384658, 0.026142012, 0.12320618, 0.13645715, 0.021826036, -0.014795626, -0.13965714, 0.021826036, -0.019105688, 0.050174944, -0.0009829737, 0.041582197, 0.076023355, 0.026142012, -0.118370146)
 
-[node name="Plate" type="RigidBody3D" unique_id=777664700]
+[node name="Plate" type="RigidBody3D" unique_id=992569432]
 mass = 0.4
-script = ExtResource("1_c6nyr")
+script = ExtResource("1_e1x3d")
+data = ExtResource("2_okkb7")
 display_name = "Wooden Plate"
 
-[node name="Mesh" type="MeshInstance3D" parent="." unique_id=1778420185]
-mesh = ExtResource("2_e1x3d")
+[node name="Mesh" type="MeshInstance3D" parent="." unique_id=880427553]
+mesh = ExtResource("3_vfas8")
 
-[node name="Collision" type="CollisionShape3D" parent="." unique_id=550048042]
-shape = SubResource("ConvexPolygonShape3D_okkb7")
+[node name="Collision" type="CollisionShape3D" parent="." unique_id=1396197163]
+shape = SubResource("ConvexPolygonShape3D_ky0ik")

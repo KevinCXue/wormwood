@@ -10,7 +10,7 @@ extends StaticBody3D
 ## wood with a dark line where the two cuts meet, so it reads as a cut INTO
 ## the wood rather than something stuck on. On the last hit it topples
 ## away from you, speeding up as it falls like a real tree, lies there a
-## moment, then sinks away, leaving a stump.
+## moment, then sinks away, leaving a stump and a few logs to collect.
 ## A sword just glances off: a small shake and some bark, no damage.
 
 @export var hits_to_fell := 4
@@ -18,6 +18,9 @@ extends StaticBody3D
 @export var variant_b := false    # use the shorter, bushier pine
 @export var lie_time := 4.0       # seconds the fallen trunk stays before sinking
 @export var wood_color := Color(0.86, 0.71, 0.48)
+@export var log_count := 3        # Pine Logs left where the trunk lay (scaled by size)
+
+const LOG_SCENE := preload("res://props/items/log.tscn")
 
 const CUT_HEIGHT := 0.7           # where the notch is cut = stump height; the trunk pivots here as it falls
 const STUMP_MESH_HEIGHT := 0.5    # height of the stump mesh in the scene (scaled to CUT_HEIGHT)
@@ -165,7 +168,24 @@ func _physics_process(delta: float) -> void:
 	else:
 		_landed_for += delta
 		if _landed_for > lie_time:
+			if _landed_for - delta <= lie_time:
+				_leave_logs()  # the first frame of sinking
 			_visual.position.y -= 0.5 * delta  # sink into the ground...
 			if _landed_for > lie_time + 3.0:
 				_visual.queue_free()            # ...and it's gone
 				set_physics_process(false)
+
+
+## As the trunk sinks away, leave logs lying along where it fell, with a puff
+## of wood chips at each. They're ordinary Items: E puts them in the bag.
+func _leave_logs() -> void:
+	# The log model lies along X; turn it so X points along the fallen trunk.
+	var along := Basis(Vector3.UP, atan2(-_fall_dir.z, _fall_dir.x))
+	for i in maxi(1, roundi(log_count * size)):
+		var log_item: Item = LOG_SCENE.instantiate()
+		get_parent().add_child(log_item)
+		# Every 1.3 m from 1.5 m out, a little above the ground so they drop
+		# and settle (the trunk lies on uneven ground).
+		var pos := global_position + _fall_dir * (1.5 + i * 1.3) + Vector3.UP * 0.6
+		log_item.global_transform = Transform3D(along, pos)
+		HitFx.burst(self, pos, wood_color, Vector3.UP, 12, 0.03, 1.5)

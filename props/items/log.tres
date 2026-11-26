@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://inventory/item_data.gd" id="1_4al42"]
+
+[resource]
+script = ExtResource("1_4al42")
+display_name = "Pine Log"
+category = 1
+weight = 4.0
+description = "A length of pine trunk, good for building or burning."
+scene_path = "res://props/items/log.tscn"

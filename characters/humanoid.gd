@@ -105,8 +105,9 @@ const SPRINT_SPEED := 8.25
 @export var fp_hand_offset := Vector3(0.24, -0.25, -0.45)
 ## How the weapon is angled in first person, relative to the camera, in
 ## degrees: X tips the top forward (negative), Z leans it in towards the
-## middle of the screen (positive, for the right hand).
-@export var fp_weapon_tilt_deg := Vector3(-25.0, 0.0, 15.0)
+## middle of the screen (positive, for the right hand). The hand turns to
+## match (characters/fist_grip.gd).
+@export var fp_weapon_tilt_deg := Vector3(-10.0, 0.0, 8.0)
 
 var holding := false
 var equipped := false
@@ -141,6 +142,7 @@ var _fp := 0.0             # 0..1: how much the first-person weapon hold is appl
 var _ik: TwoBoneIK3D
 var _ik_target: Marker3D
 var _ik_pole: Marker3D
+var _grip: SkeletonModifier3D  # turns the hand to hold the weapon upright (fist_grip.gd)
 
 ## Height of the ball-of-foot bones above the sole of the shoe, in metres.
 const SOLE := 0.02
@@ -222,19 +224,21 @@ func place_carried(item: Item) -> void:
 ## uses 180° so its blade faces away from you, knuckles-forward); the rest of
 ## hold_rotation_deg is tuned for the mannequin's arm and doesn't apply here.
 ##
-## In first person the weapon is instead angled relative to the camera (held
-## up in view, like a sword at the ready), still sitting in the hand; _fp
-## blends between the two so swings ease in and out of it.
+## In first person the hand is turned to hold the weapon up in view (see
+## characters/fist_grip.gd) and the weapon is seated in the fist it measured:
+## grip in the middle of the curled fingers, running along them. _fp blends
+## between the two so swings ease in and out of it. Both are relative to the
+## hand (the item's parent is the hand socket), so it can't drift out of it.
 func place_equipped(item: Equipable) -> void:
 	var spin := Basis(Vector3.UP, deg_to_rad(item.hold_rotation_deg.y))
 	var basis := Basis.from_euler(weapon_rotation_deg * (PI / 180.0)) * spin
-	item.transform = Transform3D(basis, weapon_offset - basis * item.grip)
-	var camera := get_viewport().get_camera_3d()
-	if _fp > 0.001 and camera:
-		var fp_basis := camera.global_basis * Basis.from_euler(fp_weapon_tilt_deg * (PI / 180.0)) * spin
-		var palm := weapon_socket.global_transform * weapon_offset
-		var fp_transform := Transform3D(fp_basis, palm - fp_basis * item.grip)
-		item.global_transform = item.global_transform.interpolate_with(fp_transform, _fp)
+	var third := Transform3D(basis, weapon_offset - basis * item.grip)
+	if _fp <= 0.001:
+		item.transform = third
+		return
+	var fist: Basis = _grip.fist_frame() * spin
+	var first := Transform3D(fist, _grip.centre - fist * item.grip)
+	item.transform = third.interpolate_with(first, _fp)
 
 
 func set_first_person(on: bool) -> void:
@@ -466,6 +470,11 @@ func _setup_ik() -> void:
 	_ik.set_target_node(0, _ik.get_path_to(_ik_target))
 	_ik.set_pole_node(0, _ik.get_path_to(_ik_pole))
 	_ik.influence = 0.0
+	# Modifiers run in child order, so this one sees the arm after the IK.
+	_grip = preload("res://characters/fist_grip.gd").new()
+	_grip.name = "FistGrip"
+	_skeleton.add_child(_grip)
+	_grip.influence = 0.0
 
 
 ## Fade the first-person hold in while the player is in first person with a
@@ -474,8 +483,10 @@ func _update_first_person_hold(delta: float) -> void:
 	var want := 1.0 if _first_person and equipped and not is_swinging() else 0.0
 	_fp = lerpf(_fp, want, 1.0 - exp(-12.0 * delta))
 	_ik.influence = _fp
+	_grip.influence = _fp
 	var camera := get_viewport().get_camera_3d()
 	if _fp > 0.001 and camera:
+		_grip.target_basis = camera.global_basis * Basis.from_euler(fp_weapon_tilt_deg * (PI / 180.0))
 		_ik_target.global_position = camera.global_transform * fp_hand_offset
 		_ik_pole.global_position = camera.global_transform * Vector3(0.7, -0.9, 0.1)
 

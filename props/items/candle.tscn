@@ -1,40 +1,42 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://item.gd" id="1_kh7fo"]
-[ext_resource type="ArrayMesh" path="res://assets/models/wooden_candlestick/wooden_candlestick.res" id="2_srtk8"]
-[ext_resource type="Script" path="res://lights/flicker.gd" id="3_spp83"]
+[ext_resource type="Script" path="res://item.gd" id="1_srtk8"]
+[ext_resource type="Resource" path="res://props/items/candle.tres" id="2_spp83"]
+[ext_resource type="ArrayMesh" path="res://assets/models/wooden_candlestick/wooden_candlestick.res" id="3_8vchp"]
+[ext_resource type="Script" path="res://lights/flicker.gd" id="4_cc8wp"]
 
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_8vchp"]
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_fos4i"]
 points = PackedVector3Array(0.022781832, 0.1656468, -0.009289204, -0.05044365, -0.0017217994, -0.016268246, -0.05044365, -0.0017217994, 0.015112691, 0.050688095, -0.0017217994, 0.01161822, 0.015812691, -0.0017217994, -0.05114365, -0.015568245, 0.21097898, 0.008133649, 0.015812691, 0.008742832, 0.049988095, -0.0085892035, 0.21097898, -0.0127737755, 0.015812691, 0.21097898, 0.008133649, -0.026031855, -0.0017217994, 0.046493627, -0.029516427, 0.008742832, -0.04416461, 0.043709055, 0.008742832, -0.030216428, -0.005104633, 0.21097898, 0.015112691, 0.043709055, 0.008742832, 0.029060872, 0.00883365, 0.2074835, -0.0127737755, -0.03998004, 0.008742832, 0.036030013, -0.012073775, 0.008742832, -0.05114365, 0.050688095, 0.008742832, -0.0127737755, -0.022537386, 0.16912046, -0.009289204, 0.026276302, -0.0017217994, 0.046493627, -0.019052815, 0.0052691847, 0.049988095, 0.00883365, 0.21097898, 0.015112691, 0.029760873, 0.008742832, -0.04416461, 0.005349079, 0.1656468, -0.023237387, -0.05044365, 0.008742832, 0.015112691, -0.04346461, 0.008742832, -0.030216428, -0.015568245, 0.2074835, 0.01161822, 0.050688095, 0.008742832, 0.01161822, -0.029516427, -0.0017217994, -0.04416461, 0.0018645084, 0.22144362, -0.0023101638, 0.043709055, -0.0017217994, -0.030216428, -0.015568245, 0.1656468, -0.019752815)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cc8wp"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d1qx5"]
 shading_mode = 0
 albedo_color = Color(1, 0.78, 0.4, 1)
 
-[sub_resource type="SphereMesh" id="SphereMesh_fos4i"]
-material = SubResource("StandardMaterial3D_cc8wp")
+[sub_resource type="SphereMesh" id="SphereMesh_0pyyi"]
+material = SubResource("StandardMaterial3D_d1qx5")
 radius = 0.012
 height = 0.042
 
-[node name="Candle" type="RigidBody3D" unique_id=911829326]
+[node name="Candle" type="RigidBody3D" unique_id=1987158848]
 mass = 0.5
-script = ExtResource("1_kh7fo")
+script = ExtResource("1_srtk8")
+data = ExtResource("2_spp83")
 display_name = "Lit Candle"
 
-[node name="Mesh" type="MeshInstance3D" parent="." unique_id=1765569189]
-mesh = ExtResource("2_srtk8")
+[node name="Mesh" type="MeshInstance3D" parent="." unique_id=130454260]
+mesh = ExtResource("3_8vchp")
 
-[node name="Collision" type="CollisionShape3D" parent="." unique_id=681014841]
-shape = SubResource("ConvexPolygonShape3D_8vchp")
+[node name="Collision" type="CollisionShape3D" parent="." unique_id=1066484877]
+shape = SubResource("ConvexPolygonShape3D_fos4i")
 
-[node name="Flame" type="MeshInstance3D" parent="." unique_id=114555370]
+[node name="Flame" type="MeshInstance3D" parent="." unique_id=1828074990]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.23765993, 0)
 cast_shadow = 0
-mesh = SubResource("SphereMesh_fos4i")
+mesh = SubResource("SphereMesh_0pyyi")
 
-[node name="Light" type="OmniLight3D" parent="." unique_id=998297864]
+[node name="Light" type="OmniLight3D" parent="." unique_id=854367061]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.26765993, 0)
 light_color = Color(1, 0.66, 0.36, 1)
 light_energy = 1.6
 omni_range = 6.0
-script = ExtResource("3_spp83")
+script = ExtResource("4_cc8wp")

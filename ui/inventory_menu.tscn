@@ -1,0 +1,231 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/inventory_menu.gd" id="1_menu"]
+[ext_resource type="FontFile" path="res://assets/fonts/EBGaramond.ttf" id="2_font"]
+
+[sub_resource type="StyleBoxEmpty" id="Empty"]
+
+[sub_resource type="StyleBoxFlat" id="Selected"]
+bg_color = Color(0.93, 0.8, 0.55, 0.18)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="TabPressed"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0)
+border_width_bottom = 2
+border_color = Color(0.93, 0.8, 0.55, 1)
+
+[sub_resource type="StyleBoxEmpty" id="TabNormal"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
+
+[sub_resource type="Theme" id="MenuTheme"]
+default_font = ExtResource("2_font")
+default_font_size = 22
+Button/colors/font_color = Color(0.85, 0.82, 0.75, 0.6)
+Button/colors/font_focus_color = Color(0.85, 0.82, 0.75, 0.6)
+Button/colors/font_hover_color = Color(0.97, 0.94, 0.87, 1)
+Button/colors/font_hover_pressed_color = Color(0.93, 0.8, 0.55, 1)
+Button/colors/font_pressed_color = Color(0.93, 0.8, 0.55, 1)
+Button/font_sizes/font_size = 19
+Button/styles/focus = SubResource("Empty")
+Button/styles/hover = SubResource("TabNormal")
+Button/styles/hover_pressed = SubResource("TabPressed")
+Button/styles/normal = SubResource("TabNormal")
+Button/styles/pressed = SubResource("TabPressed")
+Label/colors/font_color = Color(0.97, 0.94, 0.87, 1)
+Tree/colors/font_color = Color(0.97, 0.94, 0.87, 0.9)
+Tree/colors/font_selected_color = Color(1, 0.97, 0.9, 1)
+Tree/colors/title_button_color = Color(0.85, 0.82, 0.75, 0.55)
+Tree/constants/v_separation = 6
+Tree/font_sizes/title_button_font_size = 16
+Tree/styles/focus = SubResource("Empty")
+Tree/styles/panel = SubResource("Empty")
+Tree/styles/selected = SubResource("Selected")
+Tree/styles/selected_focus = SubResource("Selected")
+Tree/styles/title_button_hover = SubResource("Empty")
+Tree/styles/title_button_normal = SubResource("Empty")
+Tree/styles/title_button_pressed = SubResource("Empty")
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+content_margin_left = 28.0
+content_margin_top = 20.0
+content_margin_right = 28.0
+content_margin_bottom = 18.0
+bg_color = Color(0.08, 0.07, 0.06, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.93, 0.8, 0.55, 0.35)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="Environment" id="PreviewEnv"]
+background_mode = 1
+background_color = Color(0, 0, 0, 0)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.5, 0.45, 1)
+tonemap_mode = 4
+
+[sub_resource type="World3D" id="PreviewWorld"]
+environment = SubResource("PreviewEnv")
+
+[node name="InventoryMenu" type="CanvasLayer"]
+process_mode = 3
+layer = 10
+visible = false
+script = ExtResource("1_menu")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("MenuTheme")
+
+[node name="Dim" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="Panel" type="PanelContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -470.0
+offset_top = -300.0
+offset_right = 470.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="Root/Panel/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Root/Panel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.93, 0.8, 0.55, 1)
+theme_override_font_sizes/font_size = 30
+text = "Inventory"
+
+[node name="Weight" type="Label" parent="Root/Panel/VBox/Header"]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+text = "0.0 / 60 kg"
+
+[node name="Tabs" type="HBoxContainer" parent="Root/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Line" type="HSeparator" parent="Root/Panel/VBox"]
+modulate = Color(1, 1, 1, 0.3)
+layout_mode = 2
+
+[node name="Body" type="HBoxContainer" parent="Root/Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="List" type="Tree" parent="Root/Panel/VBox/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 3
+column_titles_visible = true
+allow_search = false
+hide_folding = true
+hide_root = true
+select_mode = 1
+scroll_horizontal_enabled = false
+
+[node name="Side" type="VBoxContainer" parent="Root/Panel/VBox/Body"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Preview" type="SubViewportContainer" parent="Root/Panel/VBox/Body/Side"]
+custom_minimum_size = Vector2(300, 240)
+layout_mode = 2
+stretch = true
+
+[node name="Viewport" type="SubViewport" parent="Root/Panel/VBox/Body/Side/Preview"]
+own_world_3d = true
+world_3d = SubResource("PreviewWorld")
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(300, 240)
+render_target_update_mode = 4
+
+[node name="Camera" type="Camera3D" parent="Root/Panel/VBox/Body/Side/Preview/Viewport"]
+transform = Transform3D(1, 0, 0, 0, 0.9848077, 0.17364818, 0, -0.17364818, 0.9848077, 0, 0.35, 2)
+fov = 30.0
+
+[node name="Light" type="DirectionalLight3D" parent="Root/Panel/VBox/Body/Side/Preview/Viewport"]
+transform = Transform3D(0.8, -0.36, 0.48, 0, 0.8, 0.6, -0.6, -0.48, 0.64, 0, 0, 0)
+light_color = Color(1, 0.95, 0.88, 1)
+
+[node name="Pivot" type="Node3D" parent="Root/Panel/VBox/Body/Side/Preview/Viewport"]
+
+[node name="ItemName" type="Label" parent="Root/Panel/VBox/Body/Side"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.93, 0.8, 0.55, 1)
+text = "Item"
+horizontal_alignment = 1
+
+[node name="Stats" type="Label" parent="Root/Panel/VBox/Body/Side"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.82, 0.75, 0.7)
+theme_override_font_sizes/font_size = 17
+text = "Weapon  ·  1.3 kg"
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="Root/Panel/VBox/Body/Side"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 19
+text = "Description"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Line2" type="HSeparator" parent="Root/Panel/VBox"]
+modulate = Color(1, 1, 1, 0.3)
+layout_mode = 2
+
+[node name="Footer" type="HBoxContainer" parent="Root/Panel/VBox"]
+layout_mode = 2
+
+[node name="Keys" type="Label" parent="Root/Panel/VBox/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.82, 0.75, 0.7)
+theme_override_font_sizes/font_size = 17
+text = "E  equip      F  favourite      R  drop      Esc  close"
+
+[node name="Gold" type="Label" parent="Root/Panel/VBox/Footer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.93, 0.8, 0.55, 1)
+theme_override_font_sizes/font_size = 19
+text = "Gold  0"

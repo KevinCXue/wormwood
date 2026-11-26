@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://inventory/item_data.gd" id="1_53lhu"]
+
+[resource]
+script = ExtResource("1_53lhu")
+display_name = "Clay Jug"
+weight = 1.2
+description = "A clay jug with a painted flower."
+scene_path = "res://props/items/jug.tscn"

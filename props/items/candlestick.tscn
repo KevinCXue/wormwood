@@ -1,18 +1,20 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://item.gd" id="1_u56ah"]
-[ext_resource type="ArrayMesh" path="res://assets/models/wooden_candlestick/wooden_candlestick.res" id="2_v2efe"]
+[ext_resource type="Script" path="res://item.gd" id="1_v2efe"]
+[ext_resource type="Resource" path="res://props/items/candlestick.tres" id="2_m1370"]
+[ext_resource type="ArrayMesh" path="res://assets/models/wooden_candlestick/wooden_candlestick.res" id="3_2w22d"]
 
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_m1370"]
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_6c5st"]
 points = PackedVector3Array(0.022781832, 0.1656468, -0.009289204, -0.05044365, -0.0017217994, -0.016268246, -0.05044365, -0.0017217994, 0.015112691, 0.050688095, -0.0017217994, 0.01161822, 0.015812691, -0.0017217994, -0.05114365, -0.015568245, 0.21097898, 0.008133649, 0.015812691, 0.008742832, 0.049988095, -0.0085892035, 0.21097898, -0.0127737755, 0.015812691, 0.21097898, 0.008133649, -0.026031855, -0.0017217994, 0.046493627, -0.029516427, 0.008742832, -0.04416461, 0.043709055, 0.008742832, -0.030216428, -0.005104633, 0.21097898, 0.015112691, 0.043709055, 0.008742832, 0.029060872, 0.00883365, 0.2074835, -0.0127737755, -0.03998004, 0.008742832, 0.036030013, -0.012073775, 0.008742832, -0.05114365, 0.050688095, 0.008742832, -0.0127737755, -0.022537386, 0.16912046, -0.009289204, 0.026276302, -0.0017217994, 0.046493627, -0.019052815, 0.0052691847, 0.049988095, 0.00883365, 0.21097898, 0.015112691, 0.029760873, 0.008742832, -0.04416461, 0.005349079, 0.1656468, -0.023237387, -0.05044365, 0.008742832, 0.015112691, -0.04346461, 0.008742832, -0.030216428, -0.015568245, 0.2074835, 0.01161822, 0.050688095, 0.008742832, 0.01161822, -0.029516427, -0.0017217994, -0.04416461, 0.0018645084, 0.22144362, -0.0023101638, 0.043709055, -0.0017217994, -0.030216428, -0.015568245, 0.1656468, -0.019752815)
 
-[node name="Candlestick" type="RigidBody3D" unique_id=864662946]
+[node name="Candlestick" type="RigidBody3D" unique_id=1073732466]
 mass = 0.5
-script = ExtResource("1_u56ah")
+script = ExtResource("1_v2efe")
+data = ExtResource("2_m1370")
 display_name = "Candlestick"
 
-[node name="Mesh" type="MeshInstance3D" parent="." unique_id=362587848]
-mesh = ExtResource("2_v2efe")
+[node name="Mesh" type="MeshInstance3D" parent="." unique_id=1954963470]
+mesh = ExtResource("3_2w22d")
 
-[node name="Collision" type="CollisionShape3D" parent="." unique_id=1171781511]
-shape = SubResource("ConvexPolygonShape3D_m1370")
+[node name="Collision" type="CollisionShape3D" parent="." unique_id=621073063]
+shape = SubResource("ConvexPolygonShape3D_6c5st")

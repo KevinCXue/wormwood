@@ -8,10 +8,12 @@ for anything in-game; nothing borrowed from existing franchises.
 town of 30 villagers (families, traders, a mayor, a priest, guards) with a
 town square and well, a market, a town hall, a church on the hill and family
 houses along streets that climb the slopes. Every villager can be talked to.
-The player can walk around in first or third person, pick up and drop items,
-equip a sword or axe, chop down trees and hit straw dummies. A day/night
-cycle runs throughout.
-**Next:** villager routines, quests, inventory, save/load and RPG systems.
+The player can walk around in first or third person, collect items into an
+inventory (stacking, weight limit, a category-list screen), carry things by
+hand, equip a sword or axe, chop down trees for logs and hit straw dummies. A
+day/night cycle runs throughout.
+**Next:** see TODO.md (quick-select wheel, save/load, villager routines,
+dialogue and quests).
 
 ## Working with the user
 
@@ -38,7 +40,8 @@ $GODOT --headless --path . --quit     # import + parse check; look for script er
 ```
 
 Controls: WASD/arrows move, hold Shift to run, Space jumps, mouse looks, mouse wheel zooms (all the way in = first person), F switches first/third
-person, E takes/drops/equips, left click swings, hold T to fast-forward time,
+person, E takes into the bag (hold E: carry / equip, E again drops what's
+carried), I or Tab opens the inventory, left click swings, hold T to fast-forward time,
 Esc quits. The input actions are registered in code in `player.gd`, not in
 the Project Settings input map.
 
@@ -50,17 +53,18 @@ the Project Settings input map.
 | `player.gd` | `CharacterBody3D`: camera-relative movement, Shift to run (top speed eased between `speed` and `sprint_speed`), jumping, respawn if you fall off the world. Children: `Model` (a `BodySlot`), `CameraRig`, `HUD`, `Interactor`, `Combat`. |
 | `settings.gd` | Autoload `Settings`: `character_detail` (`detailed`/`blocky`) and `quality` (`high`/`low`) from the `wormwood/graphics/*` project settings (quality has a `.macos` override to `low`). CLI override: `-- --detail=blocky --quality=high`. F2 in game toggles detail and reloads the scene (`main.gd`). |
 | `characters/body_slot.gd` | `class_name BodySlot`: spawns the body for the current detail setting and forwards the **body contract** (listed in its header) to it. Rotate the slot to turn the character. |
-| `characters/humanoid.gd/.tscn` | Detailed body, built lazily (villagers on `apply_look`, the player on its first frame as a hoodless ranger): outfit glTF (peasant/ranger, male/female) is the body and skeleton; the head is cut from the superhero base body by bone weights (`_head_only`), the back of the outfit's own painted-on neck is cut away (`_strip_outfit_neck`, it poked through the nape), and the head is bound to it with eyes, eyebrows and hair. `characters/dye.gdshader` recolours the peasant outfit's linen (`tunic` colour). `AnimationTree` built in code (locomotion blend by speed; legs/hips eased towards the rest pose when standing, because every pack idle has a wide staggered stance; jump; `Idle_Talking` layered on arms/upper spine only for chatting villagers; filtered carry/ready arm poses; upper-body one-shot swing), `BoneAttachment3D` sockets (weapon = right hand, carry = left), `LookAtModifier3D` head turn. First person: the player's arm meshes stay on render layer 1 (rest of body on 2), and a `TwoBoneIK3D` on the right arm holds the weapon up in view (`fp_hand_offset`/`fp_weapon_tilt_deg`), fading out during swings. |
+| `characters/humanoid.gd/.tscn` | Detailed body, built lazily (villagers on `apply_look`, the player on its first frame as a hoodless ranger): outfit glTF (peasant/ranger, male/female) is the body and skeleton; the head is cut from the superhero base body by bone weights (`_head_only`), the back of the outfit's own painted-on neck is cut away (`_strip_outfit_neck`, it poked through the nape), and the head is bound to it with eyes, eyebrows and hair. `characters/dye.gdshader` recolours the peasant outfit's linen (`tunic` colour). `AnimationTree` built in code (locomotion blend by speed; legs/hips eased towards the rest pose when standing, because every pack idle has a wide staggered stance; jump; `Idle_Talking` layered on arms/upper spine only for chatting villagers; filtered carry/ready arm poses; upper-body one-shot swing), `BoneAttachment3D` sockets (weapon = right hand, carry = left), `LookAtModifier3D` head turn. First person: the player's arm meshes stay on render layer 1 (rest of body on 2), and a `TwoBoneIK3D` on the right arm brings the hand into view (`fp_hand_offset`), then `characters/fist_grip.gd` (a `SkeletonModifier3D`) turns the hand so the weapon stands upright (`fp_weapon_tilt_deg`) and measures the fist from the finger bones so the weapon is seated in it; both fade out during swings. |
 | `camera_rig.gd` | Orbit camera (yaw node → SpringArm3D pitch → Camera3D) with the first/third-person toggle. `top_level`, so it follows the player in code. |
 | `mannequin.gd/.tscn` | Blocky body: greybox humanoid animated procedurally (pivot nodes as joints, eased each frame by `update_pose()`). Implements the same body contract (weapon = left hand, carry = right). |
-| `interactor.gd` | Raycast from the screen centre to find items or villagers in reach. Right hand carries an `Item`, left hand holds an `Equipable`. Grabbing = freeze + clear collision + reparent to a hand socket. E on an `Npc` shows their next line as a subtitle. |
+| `interactor.gd` | Raycast from the screen centre to find items or villagers in reach. Tap E = into the bag; hold E = carry in the right hand (or, for a weapon, bag + equip). The weapon hand holds a spawned copy of a bag item (`equip`/`unequip`/`drop`, also used by the inventory screen). Grabbing = freeze + clear collision + reparent to a hand socket. E on an `Npc` shows their next line as a subtitle. |
+| `inventory/` | `item_data.gd` (`class_name ItemData`, a Resource: name, category, weight, description, `scene_path`) and `inventory.gd` (the Player's `Inventory` node: stacks of [ItemData, count], gold, `carry_limit`, `equipped`, `favourites`, `changed` signal). |
 | `combat.gd` | Left click → swing → sphere overlap query → calls `on_hit(weapon, from_pos, dir)` on the nearest hittable (duck typing). |
-| `item.gd` / `equipable.gd` | `class_name Item` (RigidBody3D, `display_name`) and `Equipable extends Item` (`grip`, `hold_rotation_deg`, `kind` = `"blade"`/`"axe"`). |
+| `item.gd` / `equipable.gd` | `class_name Item` (RigidBody3D, `data: ItemData`, fallback `display_name`) and `Equipable extends Item` (`grip`, `hold_rotation_deg`, `kind` = `"blade"`/`"axe"`). |
 | `targets/` | `choppable_tree` (axe only: notch decal, falls, leaves a stump) and `straw_dummy` (any weapon: wobble, head pops off, resets). |
 | `hit_fx.gd` | `HitFx.burst(...)`: static one-shot particle puff. |
 | `day_night.gd` | Moves the sun and moon. The sky (PhysicalSkyMaterial), fog and ambient light follow automatically. |
 | `lights/flicker.gd` | Noise-driven candle/lantern flicker. |
-| `ui/` | `hud.tscn/.gd` (interaction prompt, dialogue subtitle) and `crosshair.gd` (dot drawn in `_draw`). |
+| `ui/` | `hud.tscn/.gd` (interaction prompt with hold hint, short notes, dialogue subtitle), `crosshair.gd` (dot drawn in `_draw`) and `inventory_menu.tscn/.gd` (I/Tab: pauses the game, category tabs, a `Tree` list, a `SubViewport` 3D preview; E equip, F favourite, R drop). |
 | `npcs/` | `npc.tscn/.gd` (`class_name Npc`): a villager. Look exports (`body_type`, colours, hair) go to the body via `apply_look()`; watches the player via `set_look_target()`; `talk()` returns their next line. |
 | `village/` | `village.tscn`: Roads (`road.gd`, `class_name Road`: a `Path3D` with a `width`; curve point Y = road height), Plazas (`plaza.gd`, `class_name Plaza`: a flat paved area at its Y), Buildings and Villagers. **Hand-editable source of truth for the village layout.** First written from `tools/village_layout.gd`. |
 | `buildings/` | Generated by `tools/build_buildings.gd`: cottages, family houses, church, town hall, market stalls, well. Each root has a `footprint` metadata entry (Vector2 metres) that `build_village.gd` reads. A lighting check (`_light_rooms`) adds fixed wall lanterns until every floor spot reaches `MIN_LIGHT`; it prints what each building needed. |
@@ -149,5 +153,7 @@ Ask the user before re-running a script that overwrites their editor work.
   land is flat out to ~28 m and rises to hills south and east.
 - Villagers snap to the ground at runtime too (`npc.gd`), in case the terrain
   changed after `build_village.gd` last ran.
-- There's no inventory yet. Each hand holds exactly one thing
-  (`interactor.gd`).
+- **Items:** each item scene in `props/items/` has its data beside it
+  (`apple.tscn` + `apple.tres`). `build_props.gd` writes the `.tres` only if
+  missing (tune weights and descriptions in the Inspector); new items need an
+  `ITEM_INFO` entry. Identical items stack. Felled trees leave Pine Logs.

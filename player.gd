@@ -7,6 +7,7 @@ extends CharacterBody3D
 
 @export var speed := 6.0          # metres per second (a jog; human sprint is ~8-10)
 @export var sprint_speed := 10.5  # metres per second while Shift is held (the Sprint clip plays faster above its own 8.25 pace to keep up)
+@export var overloaded_factor := 0.5  # fraction of `speed` when carrying more than the bag's limit
 @export var speed_change := 6.0   # how quickly you speed up / slow down between jog and sprint (1/s; higher = snappier)
 @export var jump_velocity := 5.0  # upward speed at the start of a jump: ~1.3 m high, enough for a 1 m crate
 @export var turn_speed := 12.0    # how quickly the model turns to face its movement
@@ -15,6 +16,7 @@ extends CharacterBody3D
 # `$Name` is shorthand for get_node("Name").
 @onready var _camera_rig: Node3D = $CameraRig
 @onready var _model: BodySlot = $Model  # holds the body (characters/body_slot.gd)
+@onready var _inventory: Node = $Inventory  # the bag (inventory/inventory.gd)
 
 # Read gravity from Project Settings so it matches the physics engine.
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -39,6 +41,7 @@ func _ready() -> void:
 	_add_action("sprint", [KEY_SHIFT])   # hold to run
 	_add_action("interact", [KEY_E])     # take / drop / talk (interactor.gd)
 	_add_action("toggle_view", [KEY_F])  # first / third person (camera_rig.gd)
+	_add_action("inventory", [KEY_I, KEY_TAB])  # open the bag (ui/inventory_menu.gd)
 	_add_mouse_action("attack", MOUSE_BUTTON_LEFT)  # swing the equipped item (combat.gd)
 
 
@@ -64,6 +67,8 @@ func _physics_process(delta: float) -> void:
 	# the ground: you can't speed up mid-jump.
 	if is_on_floor():
 		var target_speed := sprint_speed if Input.is_action_pressed("sprint") else speed
+		if _inventory.is_overloaded():
+			target_speed = speed * overloaded_factor  # too heavy: no running, and slow
 		_move_speed = lerpf(_move_speed, target_speed, 1.0 - exp(-speed_change * delta))
 	if direction != Vector3.ZERO:
 		velocity.x = direction.x * _move_speed

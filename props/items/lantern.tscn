@@ -1,41 +1,43 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://item.gd" id="1_q8wld"]
-[ext_resource type="ArrayMesh" path="res://assets/models/wooden_lantern_01/wooden_lantern_01_merged.res" id="2_idvfa"]
-[ext_resource type="Script" path="res://lights/flicker.gd" id="3_18mfe"]
+[ext_resource type="Script" path="res://item.gd" id="1_idvfa"]
+[ext_resource type="Resource" path="res://props/items/lantern.tres" id="2_18mfe"]
+[ext_resource type="ArrayMesh" path="res://assets/models/wooden_lantern_01/wooden_lantern_01_merged.res" id="3_2ehkk"]
+[ext_resource type="Script" path="res://lights/flicker.gd" id="4_x475m"]
 
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_2ehkk"]
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_gp6cr"]
 points = PackedVector3Array(-0.094108105, -0.005096748, -0.09379909, -0.047358874, 0.18645659, 0.12935236, -0.05578863, 0.18645659, 0.12935236, -0.03892912, 0.52300787, -0.013677109, 0.106471166, 0.014648662, -0.10821383, 0.107446775, 0.012480057, 0.10783503, 0.10643816, 0.34131265, 0.106901035, 0.10580348, 0.34079584, -0.10749667, -0.10659325, 0.3396062, -0.10601423, -0.10820454, 0.01571475, 0.10650818, -0.10623117, 0.33931154, 0.104680784, 0.062005527, 0.5145203, 0.0031414558, -0.107596576, 0.017065883, -0.10709209, 0.09568006, -0.0155058205, -0.09786549, -0.09336052, -0.0030162854, 0.091569535, -0.08103341, 0.48083353, 0.0031414558, 0.08727255, 0.026563093, -0.11470795, 0.09568006, 0.46406922, -0.005291716, -0.047358874, 0.52300787, 0.0031414558, 0.09265906, -0.0071005435, 0.09290962, 0.036760744, 0.52300787, -0.013677109, 0.07586147, 0.34279504, 0.10858689, 0.07490464, 0.34163782, -0.10869614, -0.06419615, 0.1612047, 0.12935236, 0.08727255, 0.4892684, -0.005291716, 0.08473426, 0.008511104, 0.10948849, 0.036760744, 0.52300787, 0.0031414558, -0.07260366, 0.49770325, -0.005267826, 0.08727255, 0.4892684, 0.003117566, -0.07260366, 0.49770325, 0.0031414558, 0.062005527, 0.5145203, -0.005267826, -0.047358874, 0.16958684, 0.12935236)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x475m"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pjfvb"]
 shading_mode = 0
 albedo_color = Color(1, 0.78, 0.4, 1)
 
-[sub_resource type="SphereMesh" id="SphereMesh_gp6cr"]
-material = SubResource("StandardMaterial3D_x475m")
+[sub_resource type="SphereMesh" id="SphereMesh_xe2mh"]
+material = SubResource("StandardMaterial3D_pjfvb")
 radius = 0.016
 height = 0.056
 
-[node name="Lantern" type="RigidBody3D" unique_id=1642204317]
-script = ExtResource("1_q8wld")
+[node name="Lantern" type="RigidBody3D" unique_id=919911800]
+script = ExtResource("1_idvfa")
+data = ExtResource("2_18mfe")
 display_name = "Lantern"
 
-[node name="Mesh" type="MeshInstance3D" parent="." unique_id=342299091]
+[node name="Mesh" type="MeshInstance3D" parent="." unique_id=1646285852]
 cast_shadow = 0
-mesh = ExtResource("2_idvfa")
+mesh = ExtResource("3_2ehkk")
 
-[node name="Collision" type="CollisionShape3D" parent="." unique_id=776524024]
-shape = SubResource("ConvexPolygonShape3D_2ehkk")
+[node name="Collision" type="CollisionShape3D" parent="." unique_id=1039266383]
+shape = SubResource("ConvexPolygonShape3D_gp6cr")
 
-[node name="Flame" type="MeshInstance3D" parent="." unique_id=432652684]
+[node name="Flame" type="MeshInstance3D" parent="." unique_id=878437248]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0)
 cast_shadow = 0
-mesh = SubResource("SphereMesh_gp6cr")
+mesh = SubResource("SphereMesh_xe2mh")
 
-[node name="Light" type="OmniLight3D" parent="." unique_id=618190445]
+[node name="Light" type="OmniLight3D" parent="." unique_id=2120293468]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.17, 0)
 light_color = Color(1, 0.66, 0.36, 1)
 light_energy = 3.5
 shadow_enabled = true
 omni_range = 10.0
-script = ExtResource("3_18mfe")
+script = ExtResource("4_x475m")

@@ -1,53 +1,63 @@
 extends Node
-## Looking at, picking up, equipping and dropping items, and talking to
-## villagers. A child of Player.
-##
-## Two hands, two jobs (no inventory yet):
-##   Right hand: carries one ordinary Item (plate, goblet...). E drops it.
-##   Left hand:  one Equipable (axe, sword). Equipping another drops the old one.
+## Looking at things and using them with E: taking items into the bag,
+## carrying them, equipping weapons and talking to villagers. Also does the
+## hand work for the inventory screen (equip, unequip, drop). A child of Player.
 ##
 ## Every physics frame we cast a ray from the camera through the centre of the
 ## screen (where the crosshair is). If it hits an Item within reach, that's the
-## target and the HUD shows "E  Take <name>" or "E  Equip <name>". If it hits a
-## villager (Npc), the HUD shows "E  Talk <name>" and E shows their next line.
+## target; a villager (Npc) within talking reach works the same way.
+##
+## E on an item:
+##   tap   puts it in the bag (inventory.gd)
+##   hold  carries it in the right hand, like a goblet you want to move to
+##         another table (E again drops it), or, for a weapon, puts it in the
+##         bag AND equips it
+## E on a villager shows their next line as a subtitle.
+##
+## Hands:
+##   Right hand: one carried Item (in the world, not in the bag).
+##   Weapon hand: the equipped weapon. It counts as in the bag; equipping
+##   spawns a copy into the hand, unequipping removes it again.
 ##
 ## Holding works the same in both hands: the item stops being simulated
-## (freeze), stops colliding, and is re-parented to a hand socket on the
-## mannequin. Letting go undoes that, adds a gentle toss and lets physics
-## take over.
+## (freeze), stops colliding, and is re-parented to a hand socket on the body.
+## Dropping undoes that, adds a gentle toss and lets physics take over.
 
 @export var reach := 2.3       # metres from the player's eyes to the item
 @export var toss_speed := 1.2  # forward speed added when dropping
 @export var talk_reach := 3.0  # metres: talking works from a bit further than grabbing
 @export var talk_range := 6.0  # walk further than this away and the conversation ends
+@export var hold_time := 0.35  # seconds E must be held to carry/equip instead of taking
 
 @onready var _player: CharacterBody3D = get_parent()
 @onready var _rig: Node3D = $"../CameraRig"
 @onready var _model: BodySlot = $"../Model"
 @onready var _hud: CanvasLayer = $"../HUD"
+@onready var _inventory: Node = $"../Inventory"
 
 var _target: Item = null         # the item under the crosshair, if any
 var _npc: Npc = null             # the villager under the crosshair, if any
 var _talking_to: Npc = null      # who said the line currently on screen
 var _held: Item = null           # right hand
-var _equipped: Equipable = null  # left hand
+var _equipped: Equipable = null  # weapon hand
+var _pressed_on: Item = null     # item E went down on, waiting to see if it's a tap or a hold
+var _pressed_for := 0.0          # seconds E has been held on it
 # Where each item lived and its collision settings before we took it, so we
 # can restore them on release. Keyed by the item itself.
 var _saved := {}
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	var hit := _find_target()
 	# `as` converts to the given type, or gives null if it isn't one.
 	_target = hit as Item
 	_npc = hit as Npc
-	# With the right hand full, only equipables (left hand) are worth targeting.
-	if _held and not _target is Equipable:
-		_target = null
 	if _held:
+		_target = null  # hands full: E means "drop"
 		_place_carried()
 	if _equipped:
 		_place_equipped()
+	_update_press(delta)
 	if _talking_to and _talking_to.global_position.distance_to(_player.global_position) > talk_range:
 		_hud.hide_line()
 		_talking_to = null
@@ -60,20 +70,103 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _npc:
 		_talking_to = _npc
 		_hud.show_line(_npc.display_name, _npc.talk())
-	elif _target is Equipable:
-		_equip(_target)
 	elif _held:
-		_release(_held)
-		_held = null
-		_model.holding = false
+		_drop_carried()
 	elif _target:
-		_take(_target)
+		# Tap or hold? We find out in _update_press, once E is released or
+		# has been down for hold_time.
+		_pressed_on = _target
+		_pressed_for = 0.0
 
 
-## The weapon/tool in the left hand, or null. Used by combat.gd.
+## The weapon/tool in the weapon hand, or null. Used by combat.gd.
 func get_equipped() -> Equipable:
 	return _equipped
 
+
+# --- Used by the inventory screen ------------------------------------------------
+
+## Put a copy of a weapon from the bag into the weapon hand.
+func equip(data: ItemData) -> void:
+	unequip()
+	var item := data.spawn() as Equipable
+	if item == null:
+		return
+	_player.get_parent().add_child(item)  # the world root (main.tscn)
+	_grab(item, _model.weapon_socket)
+	_equipped = item
+	_model.equipped = true
+	_place_equipped()
+	_inventory.equipped = data
+	_inventory.changed.emit()
+
+
+## Empty the weapon hand. The weapon stays in the bag.
+func unequip() -> void:
+	if _equipped == null:
+		return
+	_saved.erase(_equipped)
+	_equipped.queue_free()  # just the copy in the hand
+	_equipped = null
+	_model.equipped = false
+	_inventory.equipped = null
+	_inventory.changed.emit()
+
+
+## Take one of an item out of the bag and toss it on the ground in front.
+func drop(data: ItemData) -> void:
+	if _inventory.equipped == data and _inventory.count_of(data) == 1:
+		unequip()  # dropping the last one: it leaves the hand too
+	if _inventory.remove(data, 1) == 0:
+		return
+	var item := data.spawn()
+	_player.get_parent().add_child(item)  # the world root (main.tscn)
+	var forward := -_model.global_basis.z
+	item.global_position = _player.global_position + forward * 0.7 + Vector3.UP * 1.2
+	_toss(item)
+
+
+# --- Tap / hold ---------------------------------------------------------------------
+
+func _update_press(delta: float) -> void:
+	if _pressed_on == null:
+		return
+	if not is_instance_valid(_pressed_on) or _pressed_on != _target:
+		_pressed_on = null  # looked away (or it vanished) before deciding
+		return
+	if Input.is_action_pressed("interact"):
+		_pressed_for += delta
+		if _pressed_for >= hold_time:
+			var item := _pressed_on
+			_pressed_on = null
+			_hold_action(item)
+	else:
+		var item := _pressed_on  # released before hold_time: a tap
+		_pressed_on = null
+		_stash(item)
+
+
+## Tap: into the bag, gone from the world.
+func _stash(item: Item) -> void:
+	if item.data == null:
+		_take(item)  # nothing to store it as: just carry it
+		return
+	_inventory.add(item.data)
+	_hud.show_note("%s added" % item.get_display_name())
+	item.queue_free()
+
+
+## Hold: weapons go in the bag and into the hand; anything else is carried.
+func _hold_action(item: Item) -> void:
+	if item is Equipable and item.data:
+		var data := item.data
+		_stash(item)
+		equip(data)
+	else:
+		_take(item)
+
+
+# --- Hands ----------------------------------------------------------------------------
 
 ## Whatever is under the crosshair and close enough to use: an Item, an Npc,
 ## or null.
@@ -106,13 +199,18 @@ func _take(item: Item) -> void:
 	_place_carried()
 
 
-func _equip(item: Equipable) -> void:
-	if _equipped:
-		_release(_equipped)  # one slot: the old one falls from the left hand
-	_equipped = item
-	_grab(item, _model.weapon_socket)
-	_model.equipped = true
-	_place_equipped()
+func _drop_carried() -> void:
+	var item := _held
+	_held = null
+	_model.holding = false
+	var saved: Array = _saved[item]
+	_saved.erase(item)
+	# reparent() keeps the global transform by default, so it lets go exactly
+	# where the hand was.
+	item.reparent(saved[0])
+	item.collision_layer = saved[1]
+	item.collision_mask = saved[2]
+	_toss(item)
 
 
 func _grab(item: Item, socket: Node3D) -> void:
@@ -127,19 +225,10 @@ func _grab(item: Item, socket: Node3D) -> void:
 	item.reparent(socket)
 
 
-func _release(item: Item) -> void:
-	var saved: Array = _saved[item]
-	_saved.erase(item)
-	if item == _equipped:
-		_equipped = null
-		_model.equipped = false
-	# reparent() keeps the global transform by default, so it lets go exactly
-	# where the hand was.
-	item.reparent(saved[0])
-	item.collision_layer = saved[1]
-	item.collision_mask = saved[2]
+## Hand an item back to physics: the player's momentum plus a gentle toss
+## forward and up.
+func _toss(item: Item) -> void:
 	item.freeze = false
-	# Carry the player's momentum plus a gentle toss forward and up.
 	var forward := -_model.global_basis.z
 	item.linear_velocity = _player.velocity + forward * toss_speed + Vector3.UP * 0.5
 	item.angular_velocity = Vector3.ZERO
@@ -158,12 +247,11 @@ func _place_equipped() -> void:
 func _update_hud() -> void:
 	if _npc:
 		_hud.show_prompt("Talk", _npc.display_name, false)
-	elif _target is Equipable:
-		_hud.show_prompt("Equip", _target.display_name, false)
 	elif _target:
-		_hud.show_prompt("Take", _target.display_name, false)
+		var hold := "equip" if _target is Equipable else "carry"
+		_hud.show_prompt("Take", _target.get_display_name(), false, "hold: " + hold)
 	elif _held:
-		_hud.show_prompt("Drop", _held.display_name, true)
+		_hud.show_prompt("Drop", _held.get_display_name(), true)
 	else:
 		_hud.hide_prompt()
 	_hud.set_crosshair(_rig.first_person, _target != null or _npc != null)
