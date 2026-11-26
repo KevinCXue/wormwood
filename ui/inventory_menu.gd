@@ -64,8 +64,8 @@ func _input(event: InputEvent) -> void:
 			KEY_E:
 				_toggle_equip()
 			KEY_F:
-				if _selected:
-					_inventory.toggle_favourite(_selected)
+				if _selected and not _inventory.toggle_favourite(_selected):
+					_keys.text = "The wheel is full (%d favourites). Unmark one first." % _inventory.MAX_FAVOURITES
 			KEY_R:
 				if _selected:
 					_interactor.drop(_selected)

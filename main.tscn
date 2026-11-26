@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" path="res://village/village.tscn" id="17_village"]
 [ext_resource type="Script" path="res://inventory/inventory.gd" id="30_inventory"]
 [ext_resource type="PackedScene" path="res://ui/inventory_menu.tscn" id="31_invmenu"]
+[ext_resource type="PackedScene" path="res://ui/quick_wheel.tscn" id="32_wheel"]
 
 [sub_resource type="PhysicalSkyMaterial" id="SkyMat_1"]
 ground_color = Color(0.25, 0.27, 0.22, 1)
@@ -197,3 +198,5 @@ script = ExtResource("12_interactor")
 script = ExtResource("16_combat")
 
 [node name="InventoryMenu" parent="Player" instance=ExtResource("31_invmenu")]
+
+[node name="QuickWheel" parent="Player" instance=ExtResource("32_wheel")]

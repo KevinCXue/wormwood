@@ -8,7 +8,9 @@ extends Node
 ## target; a villager (Npc) within talking reach works the same way.
 ##
 ## E on an item:
-##   tap   puts it in the bag (inventory.gd)
+##   tap   puts it in the bag (inventory.gd); a weapon is also added to the
+##         quick-select wheel if there's room, and equipped if your weapon
+##         hand is empty
 ##   hold  carries it in the right hand, like a goblet you want to move to
 ##         another table (E again drops it), or, for a weapon, puts it in the
 ##         bag AND equips it
@@ -113,6 +115,19 @@ func unequip() -> void:
 	_inventory.changed.emit()
 
 
+## Take one of an item out of the bag into the right hand, as if you'd held
+## E on it (the quick-select wheel uses this for non-weapons).
+func hold(data: ItemData) -> void:
+	if _held:
+		_drop_carried()
+	if _inventory.remove(data, 1) == 0:
+		return
+	var item := data.spawn()
+	_player.get_parent().add_child(item)
+	item.global_position = _model.carry_socket.global_position
+	_take(item)
+
+
 ## Take one of an item out of the bag and toss it on the ground in front.
 func drop(data: ItemData) -> void:
 	if _inventory.equipped == data and _inventory.count_of(data) == 1:
@@ -151,9 +166,17 @@ func _stash(item: Item) -> void:
 	if item.data == null:
 		_take(item)  # nothing to store it as: just carry it
 		return
-	_inventory.add(item.data)
-	_hud.show_note("%s added" % item.get_display_name())
+	var data := item.data
+	_inventory.add(data)
 	item.queue_free()
+	var note := "%s added" % item.get_display_name()
+	if item is Equipable:
+		if data not in _inventory.favourites and _inventory.toggle_favourite(data):
+			note += " to the wheel"
+		if _equipped == null:
+			equip(data)
+			note += ", equipped"
+	_hud.show_note(note)
 
 
 ## Hold: weapons go in the bag and into the hand; anything else is carried.
@@ -161,7 +184,8 @@ func _hold_action(item: Item) -> void:
 	if item is Equipable and item.data:
 		var data := item.data
 		_stash(item)
-		equip(data)
+		if _inventory.equipped != data:
+			equip(data)  # _stash only equips if the hand was empty
 	else:
 		_take(item)
 

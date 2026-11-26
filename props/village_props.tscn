@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://props/items/jug.tscn" id="8_l6pwm"]
 [ext_resource type="PackedScene" path="res://props/items/bowl.tscn" id="9_rv0sd"]
 [ext_resource type="PackedScene" path="res://props/items/candlestick.tscn" id="10_ivod6"]
+[ext_resource type="PackedScene" path="res://props/items/lantern.tscn" id="11_lantern"]
 
 [node name="VillageProps" type="Node3D" unique_id=1161704903]
 
@@ -112,3 +113,5 @@ mass = 0.4
 script = ExtResource("5_8qeqw")
 display_name = "Wooden Plate"
 
+[node name="Lantern" type="RigidBody3D" parent="." instance=ExtResource("11_lantern")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.7717, 0.7557281, 1.9858)

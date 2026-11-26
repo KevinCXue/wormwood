@@ -16,7 +16,9 @@ signal changed
 
 var gold := 0
 var equipped: ItemData = null   # what's in the weapon hand (still counted in the bag)
-var favourites: Array[ItemData] = []  # for the quick-select wheel (coming next)
+var favourites: Array[ItemData] = []  # the quick-select wheel's slots, in order (ui/quick_wheel.gd)
+
+const MAX_FAVOURITES := 8  # slots on the wheel
 
 var _stacks: Array = []  # of [ItemData, count], in the order they were picked up
 
@@ -39,7 +41,8 @@ func remove(data: ItemData, count := 1) -> int:
 	stack[1] -= taken
 	if stack[1] == 0:
 		_stacks.erase(stack)
-		favourites.erase(data)
+		# Favourites stay marked when you run out, so the wheel's slots don't
+		# shift around (it shows the slot dimmed until you have one again).
 		if equipped == data:
 			equipped = null
 	changed.emit()
@@ -70,12 +73,16 @@ func is_overloaded() -> bool:
 	return total_weight() > carry_limit
 
 
-func toggle_favourite(data: ItemData) -> void:
+## Mark or unmark an item for the wheel. Returns false if the wheel is full.
+func toggle_favourite(data: ItemData) -> bool:
 	if data in favourites:
 		favourites.erase(data)
+	elif favourites.size() >= MAX_FAVOURITES:
+		return false
 	else:
 		favourites.append(data)
 	changed.emit()
+	return true
 
 
 func add_gold(amount: int) -> void:

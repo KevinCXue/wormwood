@@ -2,10 +2,9 @@
 
 ## Next up (in order)
 
-1. **Inventory.** Done: bag with stacking and a weight limit, category-list
-   screen, equip/drop, logs from trees. Still to do: the quick-select wheel
-   (hold Q, time slows, up to 8 favourites; favourites are already marked
-   with F in the inventory screen). Gold has a counter but no source yet.
+1. ~~**Inventory.**~~ Done: bag with stacking and a weight limit,
+   category-list screen, equip/drop, logs from trees, quick-select wheel.
+   Gold has a counter but no source yet (traders or loot, later).
 2. **Save/load.** Straight after the inventory, while there's little state:
    player position, inventory, felled trees, time of day. Design every later
    system to be saveable. Set `application/config/use_custom_user_dir` in

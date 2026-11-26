@@ -14,6 +14,7 @@ as a way to learn game development. "Wormwood" is a working codename.
 - First- and third-person camera.
 - An inventory: collect plates, goblets, apples, lanterns and more into your
   bag (identical items stack, with a weight limit), or carry them by hand.
+  Mark favourites for a quick-select wheel.
 - Equip a sword or an axe and swing it. Chop down trees with the axe for
   logs; knock the stuffing out of straw training dummies with either.
 
@@ -36,6 +37,7 @@ Planned: save/load, villager routines, quests and other RPG systems.
 | E | Take what's under the crosshair into your bag, or talk |
 | Hold E | Carry it in your hand (E again drops it); for a weapon, equip it |
 | I / Tab | Inventory (E equip, F favourite, R drop, Esc close) |
+| Hold Q | Favourites wheel: move the mouse to pick, release to use (right click removes) |
 | Left click | Swing the equipped weapon or tool |
 | F | Toggle first / third person |
 | Mouse wheel | Zoom (scroll all the way in for first person) |
