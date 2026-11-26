@@ -37,7 +37,7 @@ $GODOT --path .                       # run the game (main scene: main.tscn)
 $GODOT --headless --path . --quit     # import + parse check; look for script errors
 ```
 
-Controls: WASD/arrows move, Space jumps, mouse looks, mouse wheel zooms (all the way in = first person), F switches first/third
+Controls: WASD/arrows move, hold Shift to run, Space jumps, mouse looks, mouse wheel zooms (all the way in = first person), F switches first/third
 person, E takes/drops/equips, left click swings, hold T to fast-forward time,
 Esc quits. The input actions are registered in code in `player.gd`, not in
 the Project Settings input map.
@@ -47,10 +47,10 @@ the Project Settings input map.
 | Path | What |
 |---|---|
 | `main.tscn` / `main.gd` | World root: environment, Sun/Moon + `DayNight`, `Terrain3D`, House, props, TestGrove (trees), TrainingYard (dummies), Player. `main.gd` handles global hotkeys. |
-| `player.gd` | `CharacterBody3D`: camera-relative movement, jumping, respawn if you fall off the world. Children: `Model` (a `BodySlot`), `CameraRig`, `HUD`, `Interactor`, `Combat`. |
+| `player.gd` | `CharacterBody3D`: camera-relative movement, Shift to run (top speed eased between `speed` and `sprint_speed`), jumping, respawn if you fall off the world. Children: `Model` (a `BodySlot`), `CameraRig`, `HUD`, `Interactor`, `Combat`. |
 | `settings.gd` | Autoload `Settings`: `character_detail` (`detailed`/`blocky`) and `quality` (`high`/`low`) from the `wormwood/graphics/*` project settings (quality has a `.macos` override to `low`). CLI override: `-- --detail=blocky --quality=high`. F2 in game toggles detail and reloads the scene (`main.gd`). |
 | `characters/body_slot.gd` | `class_name BodySlot`: spawns the body for the current detail setting and forwards the **body contract** (listed in its header) to it. Rotate the slot to turn the character. |
-| `characters/humanoid.gd/.tscn` | Detailed body, built lazily (villagers on `apply_look`, the player on its first frame as a hoodless ranger): outfit glTF (peasant/ranger, male/female) is the body and skeleton; the head is cut from the superhero base body by bone weights (`_head_only`) and bound to it with eyes, eyebrows and hair. `characters/dye.gdshader` recolours the peasant outfit's linen (`tunic` colour). `AnimationTree` built in code (locomotion blend by speed, jump, filtered carry/ready arm poses, upper-body one-shot swing), `BoneAttachment3D` sockets (weapon = right hand, carry = left), `LookAtModifier3D` head turn. First person: the player's arm meshes stay on render layer 1 (rest of body on 2), and a `TwoBoneIK3D` on the right arm holds the weapon up in view (`fp_hand_offset`/`fp_weapon_tilt_deg`), fading out during swings. |
+| `characters/humanoid.gd/.tscn` | Detailed body, built lazily (villagers on `apply_look`, the player on its first frame as a hoodless ranger): outfit glTF (peasant/ranger, male/female) is the body and skeleton; the head is cut from the superhero base body by bone weights (`_head_only`) and bound to it with eyes, eyebrows and hair. `characters/dye.gdshader` recolours the peasant outfit's linen (`tunic` colour). `AnimationTree` built in code (locomotion blend by speed; legs/hips eased towards the rest pose when standing, because every pack idle has a wide staggered stance; jump; `Idle_Talking` layered on arms/upper spine only for chatting villagers; filtered carry/ready arm poses; upper-body one-shot swing), `BoneAttachment3D` sockets (weapon = right hand, carry = left), `LookAtModifier3D` head turn. First person: the player's arm meshes stay on render layer 1 (rest of body on 2), and a `TwoBoneIK3D` on the right arm holds the weapon up in view (`fp_hand_offset`/`fp_weapon_tilt_deg`), fading out during swings. |
 | `camera_rig.gd` | Orbit camera (yaw node → SpringArm3D pitch → Camera3D) with the first/third-person toggle. `top_level`, so it follows the player in code. |
 | `mannequin.gd/.tscn` | Blocky body: greybox humanoid animated procedurally (pivot nodes as joints, eased each frame by `update_pose()`). Implements the same body contract (weapon = left hand, carry = right). |
 | `interactor.gd` | Raycast from the screen centre to find items or villagers in reach. Right hand carries an `Item`, left hand holds an `Equipable`. Grabbing = freeze + clear collision + reparent to a hand socket. E on an `Npc` shows their next line as a subtitle. |
@@ -63,7 +63,7 @@ the Project Settings input map.
 | `ui/` | `hud.tscn/.gd` (interaction prompt, dialogue subtitle) and `crosshair.gd` (dot drawn in `_draw`). |
 | `npcs/` | `npc.tscn/.gd` (`class_name Npc`): a villager. Look exports (`body_type`, colours, hair) go to the body via `apply_look()`; watches the player via `set_look_target()`; `talk()` returns their next line. |
 | `village/` | `village.tscn`: Roads (`road.gd`, `class_name Road`: a `Path3D` with a `width`; curve point Y = road height), Plazas (`plaza.gd`, `class_name Plaza`: a flat paved area at its Y), Buildings and Villagers. **Hand-editable source of truth for the village layout.** First written from `tools/village_layout.gd`. |
-| `buildings/` | Generated by `tools/build_buildings.gd`: cottages, family houses, church, town hall, market stalls, well. Each root has a `footprint` metadata entry (Vector2 metres) that `build_village.gd` reads. |
+| `buildings/` | Generated by `tools/build_buildings.gd`: cottages, family houses, church, town hall, market stalls, well. Each root has a `footprint` metadata entry (Vector2 metres) that `build_village.gd` reads. A lighting check (`_light_rooms`) adds fixed wall lanterns until every floor spot reaches `MIN_LIGHT`; it prints what each building needed. |
 | `props/` | Generated prop scenes: `items/`, `tables/`, `furniture/`, plus the hand-editable layouts `village_props.tscn` and `weapons_table.tscn`. |
 | `assets/` | Poly Haven models and textures, generated vegetation, EB Garamond font. `assets/characters/quaternius/` (Universal Base Characters, CC0; only heads, eyes and hair are used), `assets/characters/outfits/` (Modular Character Outfits – Fantasy, CC0; textures downscaled 4K→2K) and `assets/animations/UAL1_Standard.glb` (Universal Animation Library, CC0). All share one 65-bone skeleton (UE-style names: `pelvis`, `spine_01`, `hand_r`...), so clips play on any of them without retargeting. Two glTFs had their normal-map file names fixed by hand. |
 | `terrain/` | Terrain3D data, materials and vegetation colliders (generated). |
@@ -89,6 +89,8 @@ the Project Settings input map.
   how to react, usually based on `weapon.kind`.
 - **Equipable models:** the long axis is +Y, with the business end (blade,
   axe head) towards +Y.
+- **Lights:** a light inside a model (a lantern's cage) needs that model's
+  `cast_shadow` off, or the model shadows its own light and it lights nothing.
 - Gameplay code goes in `_physics_process`, purely visual code in `_process`.
   For frame-rate-independent smoothing, use `1.0 - exp(-k * delta)` as the
   lerp weight.
@@ -124,7 +126,7 @@ once so headless runs know the new type.
 - `build_house.gd` **overwrites `house.tscn`**. `build_buildings.gd`
   overwrites `buildings/*.tscn`.
 - `build_village.gd` **edits the terrain in place**. It reshapes heights near
-  village features (flat pads under buildings and plazas, roads graded to
+  village features (flat pads under buildings and plazas, where a building's pad always wins over a nearby road, roads graded to
   their curve heights, eased into the hills over 5 m), computing from the
   natural land in `tools/world_shape.gd` so re-runs are idempotent. It paints
   roads dirt and plazas stone, removes vegetation in the way (moving the rest

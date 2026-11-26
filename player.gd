@@ -1,10 +1,13 @@
 extends CharacterBody3D
-## The player character. Moves with WASD / arrow keys, jumps with Space.
+## The player character. Moves with WASD / arrow keys, runs while Shift is
+## held, jumps with Space.
 ##
 ## Scale: a 1.8 m human. The body's origin is at its FEET; the capsule
 ## collision shape is raised 0.9 m in main.tscn so its bottom touches the ground.
 
 @export var speed := 6.0          # metres per second (a jog; human sprint is ~8-10)
+@export var sprint_speed := 10.5  # metres per second while Shift is held (the Sprint clip plays faster above its own 8.25 pace to keep up)
+@export var speed_change := 6.0   # how quickly you speed up / slow down between jog and sprint (1/s; higher = snappier)
 @export var jump_velocity := 5.0  # upward speed at the start of a jump: ~1.3 m high, enough for a 1 m crate
 @export var turn_speed := 12.0    # how quickly the model turns to face its movement
 
@@ -17,6 +20,7 @@ extends CharacterBody3D
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 var _spawn_point := Vector3.ZERO
+var _move_speed := 6.0  # current top speed, eased between `speed` and `sprint_speed`
 
 
 func _ready() -> void:
@@ -24,6 +28,7 @@ func _ready() -> void:
 	# get_tree().get_first_node_in_group("player") instead of a fixed path.
 	add_to_group("player")
 	_spawn_point = global_position
+	_move_speed = speed
 	# Set up the controls in code, so you can see exactly what they are.
 	# (You can also do this in Project > Project Settings > Input Map.)
 	_add_action("move_left", [KEY_A, KEY_LEFT])
@@ -31,6 +36,7 @@ func _ready() -> void:
 	_add_action("move_forward", [KEY_W, KEY_UP])
 	_add_action("move_back", [KEY_S, KEY_DOWN])
 	_add_action("jump", [KEY_SPACE])
+	_add_action("sprint", [KEY_SHIFT])   # hold to run
 	_add_action("interact", [KEY_E])     # take / drop / talk (interactor.gd)
 	_add_action("toggle_view", [KEY_F])  # first / third person (camera_rig.gd)
 	_add_mouse_action("attack", MOUSE_BUTTON_LEFT)  # swing the equipped item (combat.gd)
@@ -53,9 +59,15 @@ func _physics_process(delta: float) -> void:
 	# Make it camera-relative: spin the direction by the camera's yaw, so W
 	# always means "away from the camera" rather than "towards world -Z".
 	direction = direction.rotated(Vector3.UP, _camera_rig.rotation.y)
+	# Hold Shift to run. Ease the top speed rather than snapping it, so the
+	# body's animation blends smoothly from jog to sprint. Only change pace on
+	# the ground: you can't speed up mid-jump.
+	if is_on_floor():
+		var target_speed := sprint_speed if Input.is_action_pressed("sprint") else speed
+		_move_speed = lerpf(_move_speed, target_speed, 1.0 - exp(-speed_change * delta))
 	if direction != Vector3.ZERO:
-		velocity.x = direction.x * speed
-		velocity.z = direction.z * speed
+		velocity.x = direction.x * _move_speed
+		velocity.z = direction.z * _move_speed
 		# Turn the visible model to face where we're going. We rotate only
 		# the Model node, not the whole body, so the collision box (and the
 		# camera rig) stay unaffected. atan2(-x, -z) is the Y angle at which

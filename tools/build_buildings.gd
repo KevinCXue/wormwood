@@ -15,6 +15,13 @@ extends SceneTree
 ## WARNING: overwrites those files. Place and rotate buildings in
 ## village/village.tscn rather than editing these.
 ##
+## Lighting check: every building with a floor (not stalls or the well) gets
+## a pass at the end (_light_rooms). It samples the floor on a grid, estimates
+## how much light each spot gets from all the lights inside, and while any
+## spot is darker than MIN_LIGHT, mounts a wall lantern on the wall nearest the
+## darkest spot (clear of doors and windows). So a new building can't come out
+## pitch dark, and the output lists what each building needed.
+##
 ## Conventions: building-local metres, origin = ground centre, door faces +Z.
 ## Walls are CSG: boxes added and cut away in tree order, with use_collision on
 ## (so walls, floors and openings are solid). Each root has a "footprint"
@@ -22,6 +29,19 @@ extends SceneTree
 ## flatten and clear the ground.
 
 const OUT_DIR := "res://buildings"
+const LANTERN_MESH := "res://assets/models/wooden_lantern_01/wooden_lantern_01_merged.res"
+
+## Lighting check (see _light_rooms). Brightness is estimated the way Godot
+## fades an OmniLight3D: energy / distance, faded smoothly to 0 at its range.
+## For scale: a candle (energy 1.6) gives 0.8 at 2 m; a lantern (3.5) gives
+## 0.9 at 3.5 m.
+const MIN_LIGHT := 0.5          # every sampled spot of floor needs at least this
+const SAMPLE_STEP := 1.0        # metres between floor samples
+const SAMPLE_HEIGHT := 1.0      # metres above the floor (about table height)
+const SCONCE_HEIGHT := 2.3      # metres: above the windows' tops and head height
+const SCONCE_ENERGY := 3.0
+const SCONCE_RANGE := 9.0       # metres
+const MAX_SCONCES := 12         # safety stop
 
 # The building being built and its dimensions (set per building).
 var root_node: Node3D
@@ -30,6 +50,7 @@ var w := 7.0   # width (X)
 var d := 6.0   # depth (Z)
 var t := 0.3   # wall thickness
 var timber: StandardMaterial3D
+var openings := []  # [face, along, size] of the current building's doors and windows
 
 
 func _initialize() -> void:
@@ -73,6 +94,7 @@ func _cottage(file: String, plaster_color: Color, timber_color: Color, roof_colo
 	_place("res://props/items/candle.tscn", table.position + Vector3(0.1, _top(table) + 0.02, 0.05))
 	_place("res://props/items/bowl.tscn", table.position + Vector3(-0.15, _top(table) + 0.02, -0.1))
 	_place("res://props/furniture/chest.tscn", Vector3(-w / 2 + t + 0.6, 0, -d / 2 + t + 0.45), 90.0)
+	_light_rooms(file)
 	_finish(file)
 
 
@@ -101,6 +123,7 @@ func _house(file: String, plaster_color: Color, timber_color: Color, roof_color:
 	_place("res://props/items/jug.tscn", table.position + Vector3(0.35, _top(table) + 0.02, 0.1))
 	var cabinet := _place("res://props/furniture/cabinet.tscn", Vector3(-w / 2 + t + 0.5, 0, -d / 2 + t + 0.4), 90.0)
 	_place("res://props/items/lantern.tscn", cabinet.position + Vector3(0, 1.22, 0))
+	_light_rooms(file)
 	_finish(file)
 
 
@@ -119,6 +142,7 @@ func _church() -> void:
 	_csg_box("Tower", Vector3(tower, 12.0, tower), Vector3(0, 6.0, tower_z), stone)
 	_csg_box("TowerHollow", Vector3(tower - 0.6, 11.0, tower - 0.6), Vector3(0, 5.3, tower_z), stone, true)
 	_csg_box("Door", Vector3(1.8, 3.2, tower + 2.0), Vector3(0, 1.55, tower_z), stone, true)
+	openings.append(["front", 0.0, Vector2(1.8, 3.2)])  # cut by hand, so tell the lighting check
 	# Belfry openings near the top, through all four sides.
 	_csg_box("Belfry", Vector3(0.9, 1.6, tower + 1.0), Vector3(0, 10.3, tower_z), stone, true)
 	_csg_box("Belfry", Vector3(tower + 1.0, 1.6, 0.9), Vector3(0, 10.3, tower_z), stone, true)
@@ -149,6 +173,7 @@ func _church() -> void:
 	for x in [-0.35, 0.35]:
 		_place("res://props/items/candlestick.tscn", altar.position + Vector3(x, _top(altar) + 0.02, 0))
 	_place("res://props/items/lantern.tscn", altar.position + Vector3(0, _top(altar) + 0.02, 0))
+	_light_rooms("church")
 	_finish("church", Vector2(w, d + 2.4))  # the tower sticks out at the front
 
 
@@ -214,6 +239,7 @@ func _town_hall() -> void:
 	for x in [-5.5, 5.5]:
 		var cabinet := _place("res://props/furniture/cabinet.tscn", Vector3(x, 0, -d / 2 + t + 0.4))
 		_place("res://props/items/lantern.tscn", cabinet.position + Vector3(0, 1.22, 0))
+	_light_rooms("town_hall")
 	_finish("town_hall", Vector2(w, d + 3.0))  # the porch sticks out at the front
 
 
@@ -288,12 +314,165 @@ func _well() -> void:
 	_finish("well")
 
 
+# --- Lighting check ---------------------------------------------------------------------
+
+## Add wall lanterns until every spot of the floor gets at least MIN_LIGHT.
+## Treats the interior as one open room (no walls inside to block light), which
+## holds for everything this script builds.
+func _light_rooms(label: String) -> void:
+	var added := 0
+	var darkest := _darkest_spot()
+	var before: float = darkest[1]
+	while darkest[1] < MIN_LIGHT and added < MAX_SCONCES:
+		_add_sconce_near(darkest[0])
+		added += 1
+		darkest = _darkest_spot()
+	print("  lighting %-12s darkest spot %.2f -> %.2f, %d wall lantern(s) added%s" % [label, before, darkest[1], added,
+		"" if darkest[1] >= MIN_LIGHT else "  WARNING: still below MIN_LIGHT"])
+
+
+## [position, brightness] of the darkest floor sample.
+func _darkest_spot() -> Array:
+	var lights := []
+	for light in root_node.find_children("*", "OmniLight3D", true, false):  # false: include lights inside instanced props
+		lights.append([_local_transform(light).origin, light.light_energy, light.omni_range])
+	var worst := [Vector3.ZERO, INF]
+	var half := Vector2(w / 2 - t - 0.4, d / 2 - t - 0.4)  # stay off the walls
+	var x := -half.x
+	while x <= half.x + 0.001:
+		var z := -half.y
+		while z <= half.y + 0.001:
+			var p := Vector3(x, SAMPLE_HEIGHT, z)
+			var lit := 0.0
+			for l in lights:
+				lit += _light_from(l[0], l[1], l[2], p)
+			if lit < worst[1]:
+				worst = [p, lit]
+			z += SAMPLE_STEP
+		x += SAMPLE_STEP
+	return worst
+
+
+## Godot's OmniLight3D falloff with the default attenuation of 1: brightness
+## falls off as 1 / distance, multiplied by a window that eases it to exactly
+## 0 at the light's range.
+func _light_from(light_pos: Vector3, energy: float, light_range: float, p: Vector3) -> float:
+	var dist := maxf(light_pos.distance_to(p), 0.3)
+	var window := maxf(1.0 - pow(dist / light_range, 4.0), 0.0)
+	return energy * window * window / dist
+
+
+## A node's transform relative to the building root. (global_transform only
+## works for nodes in the scene tree, and these are built off-tree.)
+func _local_transform(node: Node3D) -> Transform3D:
+	var xform := node.transform
+	var parent := node.get_parent()
+	while parent and parent != root_node:
+		if parent is Node3D:
+			xform = (parent as Node3D).transform * xform
+		parent = parent.get_parent()
+	return xform
+
+
+## Mount a lantern on the wall closest to `spot`, slid sideways off any door or
+## window on that wall.
+func _add_sconce_near(spot: Vector3) -> void:
+	var inner := Vector2(w / 2 - t, d / 2 - t)  # inside faces of the walls
+	# Distance from the spot to each wall, and the spot's position along it.
+	var walls := [
+		["front", inner.y - spot.z, spot.x, inner.x],
+		["back", spot.z + inner.y, spot.x, inner.x],
+		["right", inner.x - spot.x, spot.z, inner.y],
+		["left", spot.x + inner.x, spot.z, inner.y],
+	]
+	walls.sort_custom(func(a, b): return a[1] < b[1])
+	var face: String = walls[0][0]
+	var limit: float = walls[0][3] - 0.6  # keep out of the corners
+	var along := clampf(walls[0][2], -limit, limit)
+	# Slide off openings (a couple of passes, in case that lands on the next one).
+	for _pass in 3:
+		for o in openings:
+			var gap: float = o[2].x / 2 + 0.35
+			if o[0] == face and absf(along - o[1]) < gap:
+				var left_spot: float = o[1] - gap
+				var right_spot: float = o[1] + gap
+				along = left_spot if absf(along - left_spot) < absf(along - right_spot) else right_spot
+		along = clampf(along, -limit, limit)
+	# Position on the wall face, and the direction pointing into the room.
+	var pos: Vector3
+	var inward: Vector3
+	match face:
+		"front":
+			pos = Vector3(along, SCONCE_HEIGHT, inner.y)
+			inward = Vector3.FORWARD  # -Z
+		"back":
+			pos = Vector3(along, SCONCE_HEIGHT, -inner.y)
+			inward = Vector3.BACK     # +Z
+		"right":
+			pos = Vector3(inner.x, SCONCE_HEIGHT, along)
+			inward = Vector3.LEFT
+		"left":
+			pos = Vector3(-inner.x, SCONCE_HEIGHT, along)
+			inward = Vector3.RIGHT
+	_sconce(pos, inward)
+
+
+## A lantern on a timber bracket, fixed to the wall at `pos` and sticking out
+## along `inward`. Part of the building, not a pickable Item, so the room stays
+## lit whatever the player carries off.
+func _sconce(pos: Vector3, inward: Vector3) -> void:
+	var sconce := Node3D.new()
+	sconce.name = "WallLantern"
+	sconce.position = pos
+	# Turn it so its local +Z (the bracket's length) points into the room.
+	# Basis.looking_at aims -Z at a direction, so aim it away from the room.
+	sconce.basis = Basis.looking_at(-inward)
+	_add(root_node, sconce)
+	var bracket := MeshInstance3D.new()
+	bracket.name = "Bracket"
+	var arm := BoxMesh.new()
+	arm.size = Vector3(0.06, 0.06, 0.3)
+	arm.material = timber
+	bracket.mesh = arm
+	bracket.position = Vector3(0, 0, 0.15)
+	_add(sconce, bracket)
+	var lantern := MeshInstance3D.new()
+	lantern.name = "Lantern"
+	lantern.mesh = load(LANTERN_MESH)
+	lantern.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	lantern.position = Vector3(0, -0.5, 0.28)  # hangs below the end of the arm
+	_add(sconce, lantern)
+	var flame := MeshInstance3D.new()
+	flame.name = "Flame"
+	var drop := SphereMesh.new()
+	drop.radius = 0.016
+	drop.height = 0.056
+	var fire := StandardMaterial3D.new()
+	fire.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fire.albedo_color = Color(1.0, 0.78, 0.4)
+	drop.material = fire
+	flame.mesh = drop
+	flame.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	flame.position = lantern.position + Vector3(0, 0.14, 0)
+	_add(sconce, flame)
+	var light := OmniLight3D.new()
+	light.name = "Light"
+	light.set_script(load("res://lights/flicker.gd"))
+	light.light_color = Color(1.0, 0.66, 0.36)
+	light.light_energy = SCONCE_ENERGY
+	light.omni_range = SCONCE_RANGE
+	light.shadow_enabled = false  # cheaper; the item lanterns already cast shadows
+	light.position = flame.position + Vector3(0, 0.03, 0)
+	_add(sconce, light)
+
+
 # --- Building blocks ----------------------------------------------------------------------
 
 func _begin(file: String, width: float, depth: float, timber_color: Color) -> void:
 	w = width
 	d = depth
 	timber = _mat(timber_color, 0.9)
+	openings = []
 	root_node = Node3D.new()
 	root_node.name = file.to_pascal_case()
 	root_node.editor_description = "Generated by tools/build_buildings.gd (re-running it overwrites this file). Door faces +Z. The 'footprint' metadata (width, depth in metres) tells tools/build_village.gd how much ground to flatten and clear."
@@ -351,6 +530,7 @@ func _floor_boards(material: Material = null) -> void:
 ## A framed opening in one wall. `along` is the position along that wall
 ## (X for front/back, Z for left/right), `y` the centre height.
 func _opening(kind: String, face: String, along: float, y: float, size: Vector2) -> void:
+	openings.append([face, along, size])
 	var on_x := face == "left" or face == "right"  # wall runs along Z
 	var sign := 1.0 if face == "front" or face == "right" else -1.0
 	var centre := Vector3(sign * w / 2, y, along) if on_x else Vector3(along, y, sign * d / 2)

@@ -180,6 +180,22 @@ func _build_stairs() -> void:
 	mid += basis.z * 0.15  # basis.z points down the slope
 	shape.transform = Transform3D(basis, mid - basis.y * 0.1)  # top face on the step edges
 	ramp.add_child(shape)
+	# The steps are a solid block, but the ramp is only a thin plank along
+	# their top, so from behind or the open side you'd walk straight into the
+	# block. Fill it with a wedge (a triangular prism): flat on the ground, a
+	# vertical back face where the steps reach the upper floor, and a slope
+	# from the bottom step to the top, just under the ramp.
+	var wedge := CollisionShape3D.new()
+	wedge.name = "Block"
+	var prism := ConvexPolygonShape3D.new()
+	var points := PackedVector3Array()
+	for side in [STAIR_X0, STAIR_X0 + STAIR_W]:
+		points.append(Vector3(side, 0.0, STAIR_Z_BOTTOM))  # bottom front edge
+		points.append(Vector3(side, 0.0, STAIR_Z_TOP))     # bottom back corner
+		points.append(Vector3(side, FLOOR2, STAIR_Z_TOP))  # top back corner
+	prism.points = points
+	wedge.shape = prism
+	ramp.add_child(wedge)
 	_add(stairs, ramp)
 
 

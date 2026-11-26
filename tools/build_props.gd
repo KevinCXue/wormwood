@@ -184,6 +184,11 @@ func _make_light_item(item_name: String, display: String, mass: float, mesh: Mes
 	body.set("display_name", display)
 	body.mass = mass
 	_add_mesh_and_shape(body, mesh, mesh.create_convex_shape(true, true))
+	if shadows:
+		# The light sits inside the lantern's cage. If the cage cast shadows,
+		# its panes would block the light in every direction and the lantern
+		# would light nothing but itself.
+		(body.get_node("Mesh") as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 	# The visible flame: a small teardrop that glows (emission) and ignores
 	# lighting (unshaded), so it always looks bright.

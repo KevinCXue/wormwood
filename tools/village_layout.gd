@@ -242,7 +242,7 @@ func _villagers() -> void:
 		"lines": ["Dunstan talks about wood the way other men talk about ale.",
 			"Alys has his hands. Clever with tools, terrible with tidying."]},
 		P(31.8, 15.0), P(32.9, 15.6))
-	_villager({"name": "Alys", "at": P(37.4, 16.4), "face": P(37.4, 12), "body": "female", "tunic": Color(0.4, 0.45, 0.56),
+	_villager({"name": "Alys", "at": P(37.0, 15.0), "face": P(37.0, 12), "body": "female", "tunic": Color(0.4, 0.45, 0.56),
 		"hair_style": "buzzed", "hair": BROWN, "skin": SKIN_LIGHT, "height": 0.95,
 		"lines": ["I made the benches in the church. Sit on one. It won't break. Probably.",
 			"Father says I'm too young for the big saw. I'm not."]})

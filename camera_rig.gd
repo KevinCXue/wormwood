@@ -48,6 +48,8 @@ const BODY_LAYER := 2
 
 @export_group("")
 @export var view_blend_speed := 10.0     # how fast the camera moves when switching views
+@export var sprint_fov_boost := 10.0     # extra degrees of field of view at full sprint (0 = off); sells the speed
+@export var fov_smoothing := 4.0         # how fast the field of view widens / settles (1/s)
 
 var first_person := false
 
@@ -55,6 +57,7 @@ var first_person := false
 @onready var _player: CharacterBody3D = get_parent()
 @onready var _arm: SpringArm3D = $SpringArm3D
 var _height := 0.0  # current (animated) pivot height
+var _base_fov := 75.0  # the camera's field of view as set in the scene, read in _ready
 
 
 func _ready() -> void:
@@ -64,6 +67,7 @@ func _ready() -> void:
 	_arm.rotation.x = deg_to_rad(start_pitch_deg)
 	_arm.spring_length = third_person_distance
 	_height = third_person_height
+	_base_fov = camera.fov
 	global_position = _target_position()
 	_capture_mouse()
 
@@ -106,6 +110,16 @@ func _physics_process(delta: float) -> void:
 		# two stay in sync and the player doesn't appear to jitter.
 		var t := 1.0 - exp(-follow_smoothing * delta)
 		global_position = global_position.lerp(_target_position(), t)
+
+
+func _process(delta: float) -> void:
+	# Sprint FOV kick: widen the view in proportion to how far above jogging
+	# pace the player is going (0 at jog speed, 1 at full sprint). Purely
+	# visual, so it lives in _process rather than _physics_process.
+	var speed := Vector2(_player.velocity.x, _player.velocity.z).length()
+	var sprint_amount := clampf(inverse_lerp(_player.speed, _player.sprint_speed, speed), 0.0, 1.0)
+	var target_fov := _base_fov + sprint_fov_boost * sprint_amount
+	camera.fov = lerpf(camera.fov, target_fov, 1.0 - exp(-fov_smoothing * delta))
 
 
 ## Wheel notch: direction -1 = in (closer), +1 = out. The arm length eases

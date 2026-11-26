@@ -21,6 +21,7 @@ script = ExtResource("1_q8wld")
 display_name = "Lantern"
 
 [node name="Mesh" type="MeshInstance3D" parent="." unique_id=342299091]
+cast_shadow = 0
 mesh = ExtResource("2_idvfa")
 
 [node name="Collision" type="CollisionShape3D" parent="." unique_id=776524024]

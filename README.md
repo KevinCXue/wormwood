@@ -29,6 +29,7 @@ Planned: a village, NPCs, quests, an inventory and other RPG systems.
 | Key | Action |
 |---|---|
 | WASD / arrows | Move |
+| Shift (hold) | Run |
 | Mouse | Look |
 | Space | Jump |
 | E | Take, drop or equip what's under the crosshair |

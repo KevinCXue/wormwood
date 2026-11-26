@@ -22,7 +22,9 @@ extends Node3D
 ##     graph (built in _setup_tree, below):
 ##
 ##       move (idle/walk/jog/sprint by speed) -> move_rate
+##         -> stance   (legs and hips only, standing still: narrow the idle stance)
 ##         -> air      (blend in the jump loop while off the ground)
+##         -> talk     (arms and upper spine only: chatting gestures, see apply_look)
 ##         -> carry    (left arm only: hold it out, from "Idle_Torch")
 ##         -> ready    (right arm only: weapon held ready, "Sword_Idle")
 ##         -> swing    (upper body only: one-shot "Sword_Attack")
@@ -76,6 +78,13 @@ const SPRINT_SPEED := 8.25
 
 @export_group("Swing")
 @export var attack_speed := 1.4   # Sword_Attack is slow and showy; play it faster
+## Every standing idle clip in the animation pack shares one stance: feet wide,
+## one foot 40 cm forward, hips turned ~13°. Alone it reads as relaxed, but two
+## villagers facing each other looked like boxers squaring up. While standing
+## still, blend the legs and hips this far towards the rest pose (feet
+## together, hips square). 0 = the clip as recorded.
+@export_range(0.0, 1.0) var stance_narrowing := 0.6
+@export_range(0.0, 1.0) var talk_strength := 0.6  # how much of the talking clip's arm gestures show (0 = none, 1 = full clip)
 @export var strike_point := 0.4   # seconds into Sword_Attack (at speed 1) when the blade passes in front
 
 @export_group("Hands")
@@ -151,6 +160,8 @@ func update_pose(speed: float, on_floor: bool, delta: float) -> void:
 	# beyond a sprint, play the sprint faster.
 	_tree.set("parameters/move/blend_position", minf(speed, SPRINT_SPEED))
 	_tree.set("parameters/move_rate/scale", maxf(1.0, speed / SPRINT_SPEED))
+	# Fades out as soon as the character starts walking, so the gait is untouched.
+	_tree.set("parameters/stance/blend_amount", stance_narrowing * (1.0 - clampf(speed / WALK_SPEED, 0.0, 1.0)))
 	_air = lerpf(_air, 0.0 if on_floor else 1.0, k * 0.6)
 	_tree.set("parameters/air/blend_amount", _air)
 	_carry = lerpf(_carry, carry_pose_strength if holding else 0.0, k)
@@ -246,9 +257,14 @@ func apply_look(look: Dictionary) -> void:
 	_set_hair(look.get("hair_style", "short"), look.get("hair", Color(0.22, 0.14, 0.09)))
 	if look.get("beard", false) and _body_type == "male":
 		_add_hair_mesh("Hair_Beard", look.get("hair", Color(0.22, 0.14, 0.09)))
-	if look.has("idle"):
-		var idle: AnimationNodeAnimation = (_tree.tree_root as AnimationNodeBlendTree).get_node("move").get_blend_point_node(0)
-		idle.animation = look["idle"]
+	if look.get("idle", "Idle") != "Idle":
+		# Idle variants (e.g. "Idle_Talking") play on the arms and upper spine
+		# only, over the plain Idle. The full Idle_Talking clip plants the feet
+		# in a wide, staggered stance with the hips turned side-on, which made
+		# two villagers chatting face to face look like they were squaring up.
+		var talk: AnimationNodeAnimation = (_tree.tree_root as AnimationNodeBlendTree).get_node("talk_clip")
+		talk.animation = look["idle"]
+		_tree.set("parameters/talk/blend_amount", talk_strength)
 	# Start each character at a different point in its animations, so a
 	# crowd doesn't breathe and gesture in lockstep.
 	_tree.advance(randf() * 3.0)
@@ -315,16 +331,32 @@ func _setup_tree() -> void:
 	graph.add_node("move_rate", AnimationNodeTimeScale.new())
 	graph.connect_node("move_rate", 0, "move")
 
+	graph.add_node("rest_pose", _clip("A_TPose"))
+	var stance := AnimationNodeBlend2.new()
+	_filter(stance, ["pelvis"] + _leg_bones())
+	graph.add_node("stance", stance)
+	graph.connect_node("stance", 0, "move_rate")
+	graph.connect_node("stance", 1, "rest_pose")
+
 	graph.add_node("jump", _clip("Jump"))
 	graph.add_node("air", AnimationNodeBlend2.new())
-	graph.connect_node("air", 0, "move_rate")
+	graph.connect_node("air", 0, "stance")
 	graph.connect_node("air", 1, "jump")
+
+	# Off (blend_amount 0) unless apply_look gives this character a talking
+	# idle. Filtered like the swing, minus spine_01 so the hips stay square.
+	graph.add_node("talk_clip", _clip("Idle_Talking"))
+	var talk := AnimationNodeBlend2.new()
+	_filter(talk, ["spine_02", "spine_03"] + _side_bones("_l") + _side_bones("_r"))
+	graph.add_node("talk", talk)
+	graph.connect_node("talk", 0, "air")
+	graph.connect_node("talk", 1, "talk_clip")
 
 	graph.add_node("torch", _clip("Idle_Torch"))
 	var carry := AnimationNodeBlend2.new()
 	_filter(carry, _side_bones("_l"))
 	graph.add_node("carry", carry)
-	graph.connect_node("carry", 0, "air")
+	graph.connect_node("carry", 0, "talk")
 	graph.connect_node("carry", 1, "torch")
 
 	graph.add_node("sword_idle", _clip("Sword_Idle"))
@@ -365,6 +397,17 @@ func _side_bones(suffix: String) -> Array:
 		if bone.ends_with(suffix) and not (bone.begins_with("thigh") or bone.begins_with("calf")
 				or bone.begins_with("foot") or bone.begins_with("ball")):
 			bones.append(bone)
+	return bones
+
+
+## Thigh, calf, foot and toe bones on both sides.
+func _leg_bones() -> Array:
+	var bones := []
+	for i in _skeleton.get_bone_count():
+		var bone := _skeleton.get_bone_name(i)
+		for part in ["thigh", "calf", "foot", "ball"]:
+			if bone.begins_with(part):
+				bones.append(bone)
 	return bones
 
 

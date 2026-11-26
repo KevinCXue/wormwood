@@ -201,6 +201,12 @@ func _shape_ground() -> void:
 			var pos := Vector3(x, 0, z)
 			var natural := shape.height_at(x, z)
 			var target := lerpf(natural, sum / total, strongest)
+			# Under a building (and its margin) the floor height wins outright.
+			# Averaging it with a road or plaza that ends nearby would tilt the
+			# pad, and the ground would poke up through the floorboards.
+			for b in buildings:
+				if _area_weight(b[0], b[1], PAD_MARGIN, x, z) >= 1.0:
+					target = b[2]
 			var old := data.get_height(pos)
 			if absf(target - old) > 0.001:
 				data.set_height(pos, target)
