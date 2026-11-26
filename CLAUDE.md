@@ -13,7 +13,19 @@ inventory (stacking, weight limit, a category-list screen, a quick-select
 wheel for favourites), carry things by
 hand, equip a sword or axe, chop down trees for logs and hit straw dummies. A
 day/night cycle runs throughout.
-**Next:** see TODO.md (save/load, villager routines, dialogue and quests).
+**Next:** Milestone 1 in `ROADMAP.md` (smoke tests, lore sketch, object
+IDs, save/load, dialogue, quests).
+
+## Plans and priorities
+
+- `VISION.md`: why the game exists, the pillars (in priority order) and the
+  non-goals. Check a feature against the pillars before starting it.
+- `ROADMAP.md`: the only plan. Milestones are playable slices; tick items off
+  as they land, and add settled design choices to its **decision log**.
+- `TODO.md`: bugs and polish only. Log visual nitpicks there instead of
+  fixing them mid-feature, unless they badly break immersion.
+- Villager dialogue written so far is an AI placeholder (to be rewritten by
+  the user). Keep new placeholder lines short and plainly functional.
 
 ## Working with the user
 

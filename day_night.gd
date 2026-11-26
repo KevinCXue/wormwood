@@ -14,7 +14,7 @@ extends Node
 
 @export_group("Time")
 @export_range(0.0, 24.0, 0.1) var time_of_day := 9.0  # hours: 6 = sunrise, 12 = noon, 18 = sunset
-@export var day_length_minutes := 20.0  # real minutes per in-game day (Skyrim uses ~72)
+@export var day_length_minutes := 20.0  # real minutes per in-game day (big open-world RPGs often use ~70)
 @export var paused := false             # tick this in the Inspector to freeze the clock
 @export var fast_forward_speed := 120.0 # multiplier while holding T
 
