@@ -1,7 +1,11 @@
 class_name Npc
 extends CharacterBody3D
 ## A villager. For now they stand in one spot, breathe, turn their head to
-## watch you when you come near, and say a line when you talk to them (E).
+## watch you when you come near, and talk when you press E: a conversation
+## from their dialogue script (dialogue/*.txt, played by ui/dialogue_box.gd)
+## if they have one, otherwise their next line from `lines` as a subtitle.
+## If their script starts or completes quests, a speech bubble over their
+## head shows whether they have one for you (npcs/quest_marker.gd).
 ##
 ## The body is whichever one the player uses (blocky mannequin or detailed
 ## humanoid, see characters/body_slot.gd), dressed in _ready() from the
@@ -15,6 +19,9 @@ extends CharacterBody3D
 ## the player bumps into.
 
 @export var display_name := "Villager"
+## A conversation script (dialogue/*.txt). Empty: they just say `lines`.
+@export_file("*.txt") var dialogue_file := ""
+## One-liners for villagers without a script, shown in turn as subtitles.
 @export_multiline var lines: PackedStringArray = ["Hello there."]
 
 @export_group("Look")
@@ -61,6 +68,30 @@ func _ready() -> void:
 	# The player adds itself to the "player" group (player.gd). Looking it up
 	# by group means this scene doesn't need a hard-coded path to the player.
 	_player = get_tree().get_first_node_in_group("player")
+	_add_quest_marker()
+
+
+## A bubble over the head if this villager's script deals in quests.
+func _add_quest_marker() -> void:
+	if dialogue_file == "":
+		return
+	var ids: PackedStringArray = preload("res://dialogue/dialogue_script.gd").load_script(dialogue_file).quest_ids()
+	if ids.is_empty():
+		return
+	var marker: Sprite3D = preload("res://npcs/quest_marker.gd").new()
+	marker.name = "QuestMarker"
+	marker.quest_ids = ids
+	marker.height = 2.35 * height_scale
+	add_child(marker)
+
+
+## Called by the dialogue box: face the player for the whole conversation.
+func begin_conversation() -> void:
+	_attention = INF
+
+
+func end_conversation() -> void:
+	_attention = ATTENTION_TIME  # keep facing them a moment longer
 
 
 ## Next line of dialogue. Steps through `lines` and then repeats the last
@@ -73,6 +104,10 @@ func talk() -> String:
 
 
 func _physics_process(delta: float) -> void:
+	if _player == null:
+		# Villagers start up before the player (they come first in the
+		# scene), so the lookup in _ready() can miss it.
+		_player = get_tree().get_first_node_in_group("player")
 	if not _grounded:
 		_snap_to_ground()
 	# Standing still: speed 0 gives the idle pose with its slow breathing.

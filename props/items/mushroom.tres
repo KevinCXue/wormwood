@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://inventory/item_data.gd" id="1_vd4v6"]
+
+[resource]
+script = ExtResource("1_vd4v6")
+display_name = "Cave Mushroom"
+category = 2
+weight = 0.1
+description = "A pale cave mushroom with a faint glow. Smells earthy."
+scene_path = "res://props/items/mushroom.tscn"

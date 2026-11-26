@@ -11,10 +11,13 @@ houses along streets that climb the slopes. Every villager can be talked to.
 The player can walk around in first or third person, collect items into an
 inventory (stacking, weight limit, a category-list screen, a quick-select
 wheel for favourites), carry things by
-hand, equip a sword or axe, chop down trees for logs and hit straw dummies. A
-day/night cycle runs throughout.
-**Next:** Milestone 1 in `ROADMAP.md` (smoke tests, lore sketch, object
-IDs, save/load, dialogue, quests).
+hand, equip a sword or axe, chop down trees for logs and hit straw dummies,
+save and load, and talk to villagers in branching conversations. One side
+quest exists: Tobin's "Suspicious Stew" (fetch 5 mushrooms from a cave in
+the woods north-west of town), tracked in a journal. A day/night cycle runs
+throughout.
+**Next:** Milestone 1 in `ROADMAP.md` (lore sketch, Anselm's quest, title and
+pause menus, smoke tests).
 
 ## Plans and priorities
 
@@ -55,6 +58,7 @@ Controls: WASD/arrows move, hold Shift to run, Space jumps, mouse looks, mouse w
 person, E takes into the bag (hold E: carry / equip, E again drops what's
 carried), I or Tab opens the inventory, hold Q for the favourites wheel,
 left click swings, hold T to fast-forward time, F5 saves, F9 lists saves,
+J opens the journal, in conversations Up/Down or W/S + Enter/E (or 1-9) pick replies,
 H shows all controls, Esc quits (autosaving first). The input actions are registered in code in
 `player.gd`, not in the Project Settings input map. **When adding or changing
 a key, update the table at the top of `ui/help_menu.gd`** (and the README).
@@ -73,15 +77,18 @@ a key, update the table at the top of `ui/help_menu.gd`** (and the README).
 | `mannequin.gd/.tscn` | Blocky body: greybox humanoid animated procedurally (pivot nodes as joints, eased each frame by `update_pose()`). Implements the same body contract (weapon = left hand, carry = right). |
 | `interactor.gd` | Raycast from the screen centre to find items or villagers in reach. Tap E = into the bag (a weapon is also put on the wheel if there's room, and equipped if the hand is empty); hold E = carry in the right hand (or, for a weapon, bag + equip). The weapon hand holds a spawned copy of a bag item (`equip`/`unequip`/`drop`, also used by the inventory screen). Grabbing = freeze + clear collision + reparent to a hand socket. E on an `Npc` shows their next line as a subtitle. |
 | `inventory/` | `item_data.gd` (`class_name ItemData`, a Resource: name, category, weight, description, `scene_path`) and `inventory.gd` (the Player's `Inventory` node: stacks of [ItemData, count], gold, `carry_limit`, `equipped`, `favourites`, `changed` signal). |
+| `quests/` | `quest_data.gd` (`class_name QuestData`, a Resource per quest; **file name = quest id**: title, MAIN/SIDE, giver, summary, `objectives` per stage, `completed_text`, optional `gather_item`/`gather_count` for "(3/5)" progress) and `quest_log.gd` (the Player's `QuestLog` node: start/set_stage/complete, is_active/is_ready/is_done, `objective()`, `changed` signal; persisted). |
+| `dialogue/` | Conversation scripts, one plain-text file per villager (`tobin.txt`), and `dialogue_script.gd`, the parser. **The format is documented in its header** (sections `== name`, `Speaker: line`, `- choice -> section [if cond]`, `? cond -> section`, `! effect`). Conditions: quest states, `has ITEM N`; effects: quests, `take`/`give` items, `gold`. Errors are reported with file:line on load. |
+| `places/` | Generated wilderness places: `mushroom_cave.tscn` (from `tools/build_cave.gd`: CSG rock dome, triplanar rock texture, boulders, green glow lights, 8 mushroom items). Placed in `village.tscn` under **Wilds**. |
 | `combat.gd` | Left click → swing → sphere overlap query → calls `on_hit(weapon, from_pos, dir)` on the nearest hittable (duck typing). |
 | `item.gd` / `equipable.gd` | `class_name Item` (RigidBody3D, `data: ItemData`, fallback `display_name`) and `Equipable extends Item` (`grip`, `hold_rotation_deg`, `kind` = `"blade"`/`"axe"`). |
 | `targets/` | `choppable_tree` (axe only: notch decal, falls, leaves a stump) and `straw_dummy` (any weapon: wobble, head pops off, resets). |
 | `hit_fx.gd` | `HitFx.burst(...)`: static one-shot particle puff. |
 | `day_night.gd` | Moves the sun and moon. The sky (PhysicalSkyMaterial), fog and ambient light follow automatically. |
 | `lights/flicker.gd` | Noise-driven candle/lantern flicker. |
-| `ui/` | `hud.tscn/.gd` (interaction prompt with hold hint, short notes, dialogue subtitle), `crosshair.gd` (dot drawn in `_draw`) `inventory_menu.tscn/.gd` (I/Tab: pauses the game, category tabs, a `Tree` list, a `SubViewport` 3D preview; E equip, F favourite, R drop) and `help_menu.tscn/.gd` (H: every control in Player/System columns, built from a table at the top of the script; the HUD shows a book + H hint drawn by `book_icon.gd`), `keycap_style.tres` (shared key-cap look), `load_menu.tscn/.gd` (F9: `ItemList` of saves with thumbnails, Enter loads, Delete twice deletes) and `quick_wheel.tscn/.gd` (hold Q: `Engine.time_scale` slows the world, a ring drawn in `_draw` shows up to 8 favourites, mouse movement picks a slot, release to equip/put away a weapon or hold anything else; right click removes a slot). |
-| `npcs/` | `npc.tscn/.gd` (`class_name Npc`): a villager. Look exports (`body_type`, colours, hair) go to the body via `apply_look()`; watches the player via `set_look_target()`; `talk()` returns their next line. |
-| `village/` | `village.tscn`: Roads (`road.gd`, `class_name Road`: a `Path3D` with a `width`; curve point Y = road height), Plazas (`plaza.gd`, `class_name Plaza`: a flat paved area at its Y), Buildings and Villagers. **Hand-editable source of truth for the village layout.** First written from `tools/village_layout.gd`. |
+| `ui/` | `hud.tscn/.gd` (interaction prompt with hold hint, short notes, dialogue subtitle), `crosshair.gd` (dot drawn in `_draw`) `inventory_menu.tscn/.gd` (I/Tab: pauses the game, category tabs, a `Tree` list, a `SubViewport` 3D preview; E equip, F favourite, R drop) and `help_menu.tscn/.gd` (H: every control in Player/System columns, built from a table at the top of the script; the HUD shows a book + H hint drawn by `book_icon.gd`), `keycap_style.tres` (shared key-cap look), `dialogue_box.tscn/.gd` (plays a dialogue script at the bottom of the screen; sets `player.in_dialogue`, which stops movement, swings and menus; runs the script's conditions/effects against Inventory and QuestLog), `journal.tscn/.gd` (J: Main/Side/Completed quests and the selected one's objective), `load_menu.tscn/.gd` (F9: `ItemList` of saves with thumbnails, Enter loads, Delete twice deletes) and `quick_wheel.tscn/.gd` (hold Q: `Engine.time_scale` slows the world, a ring drawn in `_draw` shows up to 8 favourites, mouse movement picks a slot, release to equip/put away a weapon or hold anything else; right click removes a slot). |
+| `npcs/` | `npc.tscn/.gd` (`class_name Npc`): a villager. Look exports (`body_type`, colours, hair) go to the body via `apply_look()`; watches the player via `set_look_target()`. `dialogue_file` (a `dialogue/*.txt`) gives them a conversation; without one, `talk()` returns their next one-liner from `lines`. `quest_marker.gd`: a billboard `Sprite3D` speech bubble (drawn in code) added automatically when their script starts/completes quests: gold ! = new, grey ▶ = in progress, gold ▶ = ready to hand in. |
+| `village/` | `village.tscn`: Roads (including `CaveTrail` to the cave) (`road.gd`, `class_name Road`: a `Path3D` with a `width`; curve point Y = road height), Plazas (`plaza.gd`, `class_name Plaza`: a flat paved area at its Y), Buildings, Villagers and Wilds (places out of town, e.g. the cave; footprints are flattened like buildings). **Hand-editable source of truth for the village layout.** First written from `tools/village_layout.gd`. |
 | `buildings/` | Generated by `tools/build_buildings.gd`: cottages, family houses, church, town hall, market stalls, well. Each root has a `footprint` metadata entry (Vector2 metres) that `build_village.gd` reads. A lighting check (`_light_rooms`) adds fixed wall lanterns until every floor spot reaches `MIN_LIGHT`; it prints what each building needed. |
 | `props/` | Generated prop scenes: `items/`, `tables/`, `furniture/`, plus the hand-editable layouts `village_props.tscn` and `weapons_table.tscn`. |
 | `assets/` | Poly Haven models and textures, generated vegetation, EB Garamond font. `assets/characters/quaternius/` (Universal Base Characters, CC0; only heads, eyes and hair are used), `assets/characters/outfits/` (Modular Character Outfits – Fantasy, CC0; textures downscaled 4K→2K) and `assets/animations/UAL1_Standard.glb` (Universal Animation Library, CC0). All share one 65-bone skeleton (UE-style names: `pelvis`, `spine_01`, `hand_r`...), so clips play on any of them without retargeting. Two glTFs had their normal-map file names fixed by hand. |
@@ -98,6 +105,13 @@ a key, update the table at the top of `ui/help_menu.gd`** (and the README).
   `load_state(state)`. It's keyed by its node path, so renaming a node in the
   editor makes old saves forget it. Bump `SaveGame.VERSION` when a format
   changes in a way old saves can't read.
+- **Quests and dialogue are data.** A new quest = a `.tres` in `quests/`; a
+  new conversation = a `.txt` in `dialogue/` set as a villager's
+  `dialogue_file`. No code. Item names in scripts are file names in
+  `props/items/`. (When the game is first exported, add `*.txt` to the export
+  filter, or the dialogue files won't be packed.)
+- **Menus** check `not get_tree().paused and not get_parent().in_dialogue`
+  before opening.
 - **Scale:** 1 unit = 1 metre. The player is 1.8 m tall with its origin at the
   feet. Forward is **-Z** (Godot's convention), for models too.
 - **Physics layers** (named in `project.godot`): 1 `world` (everything solid),
@@ -136,7 +150,8 @@ $GODOT --headless --path . -s res://tools/build_world.gd   # ~1 min
 $GODOT --headless --path . -s res://tools/build_props.gd
 $GODOT --headless --path . -s res://tools/build_house.gd   # after build_props
 $GODOT --headless --path . -s res://tools/build_buildings.gd  # after build_props
-$GODOT --headless --path . -s res://tools/build_village.gd    # after build_world + build_buildings
+$GODOT --headless --path . -s res://tools/build_cave.gd       # after build_props
+$GODOT --headless --path . -s res://tools/build_village.gd    # after build_world + build_buildings + build_cave
 ```
 
 After adding a new `class_name` script, run `$GODOT --headless --path . --import`

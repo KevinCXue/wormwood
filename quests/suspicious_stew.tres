@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://quests/quest_data.gd" id="1_quest"]
+[ext_resource type="Resource" path="res://props/items/mushroom.tres" id="2_mushroom"]
+
+[resource]
+script = ExtResource("1_quest")
+title = "Suspicious Stew"
+category = 1
+giver = "Tobin"
+summary = "Tobin promised his wife Rosalind his mother's mushroom stew for her birthday. The recipe needs the glowing mushrooms that grow in a cave in the woods."
+objectives = PackedStringArray("Bring Tobin five cave mushrooms. The cave is in the woods north-west of town; follow the trail past the big house.")
+completed_text = "Tobin got his mushrooms, and Rosalind will get her stew. It will glow a little."
+gather_item = ExtResource("2_mushroom")
+gather_count = 5

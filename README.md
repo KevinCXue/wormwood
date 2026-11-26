@@ -15,10 +15,13 @@ as a way to learn game development. "Wormwood" is a working codename.
 - An inventory: collect plates, goblets, apples, lanterns and more into your
   bag (identical items stack, with a weight limit), or carry them by hand.
   Mark favourites for a quick-select wheel.
+- Branching conversations, quests and a journal. Tobin the woodcutter needs
+  mushrooms from a cave in the woods for a birthday stew.
+- Save anywhere (F5), with autosaves; the game carries on where you left off.
 - Equip a sword or an axe and swing it. Chop down trees with the axe for
   logs; knock the stuffing out of straw training dummies with either.
 
-Planned: save/load, villager routines, quests and other RPG systems.
+Planned: the main questline, villager routines and other RPG systems.
 
 ## Running it
 
@@ -43,6 +46,8 @@ Planned: save/load, villager routines, quests and other RPG systems.
 | Mouse wheel | Zoom (scroll all the way in for first person) |
 | Hold T | Fast-forward time |
 | F2 | Switch between detailed and blocky characters |
+| J | Journal: your quests |
+| Up / Down, Enter | In a conversation: choose a reply (W/S, number keys and the mouse work too) |
 | H | Help: every control, on one page |
 | F5 | Save (a new save each time; the newest 50 are kept, plus 3 autosaves) |
 | F9 | List of saves: Enter loads, Delete twice deletes |

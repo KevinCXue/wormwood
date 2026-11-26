@@ -21,6 +21,10 @@ extends CharacterBody3D
 # Read gravity from Project Settings so it matches the physics engine.
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
+## True while talking to someone (ui/dialogue_box.gd): no moving, jumping,
+## swinging or opening menus until the conversation ends.
+var in_dialogue := false
+
 var _spawn_point := Vector3.ZERO
 var _move_speed := 6.0  # current top speed, eased between `speed` and `sprint_speed`
 
@@ -45,6 +49,7 @@ func _ready() -> void:
 	_add_action("inventory", [KEY_I, KEY_TAB])  # open the bag (ui/inventory_menu.gd)
 	_add_action("quick_select", [KEY_Q])  # hold for the favourites wheel (ui/quick_wheel.gd)
 	_add_action("help", [KEY_H])  # the controls screen (ui/help_menu.gd)
+	_add_action("journal", [KEY_J])  # quests (ui/journal.gd)
 	_add_mouse_action("attack", MOUSE_BUTTON_LEFT)  # swing the equipped item (combat.gd)
 
 
@@ -54,13 +59,15 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= gravity * delta
 
 	# 2. Jump: only allowed when standing on something.
-	if Input.is_action_just_pressed("jump") and is_on_floor():
+	if Input.is_action_just_pressed("jump") and is_on_floor() and not in_dialogue:
 		velocity.y = jump_velocity
 
 	# 3. Movement: turn the keys into a direction on the ground (X/Z plane).
 	#    get_vector gives x = right, y = back (so W is -y, matching Godot's
 	#    convention that "forward" is -Z).
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	if in_dialogue:
+		input_dir = Vector2.ZERO  # stand still while talking
 	var direction := Vector3(input_dir.x, 0.0, input_dir.y)
 	# Make it camera-relative: spin the direction by the camera's yaw, so W
 	# always means "away from the camera" rather than "towards world -Z".

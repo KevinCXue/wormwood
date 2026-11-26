@@ -78,13 +78,16 @@ Systems this forces into existence, roughly in build order:
       saves with thumbnails, and starting the game continues from the newest.
       Quest states join when quests exist (they just need the `persist`
       group).
-- [ ] **Dialogue with choices:** data-driven conversations (one resource
-      per conversation) with conditions such as "has quest" or "has 5 logs"
-      and effects such as "start quest" or "take 5 logs".
-- [ ] **Quests:** quest definitions as data, with states and stages, and a
-      journal UI showing active and completed quests.
-- [ ] **Currency:** 🔨 the gold counter exists; add rewards (and a world
-      source, e.g. a coin pouch) so it means something.
+- [x] **Dialogue with choices:** conversations are plain-text scripts in
+      `dialogue/` (format in `dialogue/dialogue_script.gd`), with conditions
+      (quest states, "has 5 mushroom") and effects (start/complete quest,
+      take/give items, gold). Up/Down + Enter, W/S, 1-9 or the mouse.
+- [x] **Quests:** `QuestData` resources (stages, gathering goals), a saved
+      `QuestLog`, a journal (J) with Main/Side/Completed, and speech-bubble
+      markers over quest givers. First quest: Tobin's "Suspicious Stew"
+      (5 mushrooms from a new cave north-west of town, 15 gold).
+- [ ] **Currency:** 🔨 quests can pay gold now (Tobin gives 15); still
+      nothing to spend it on (shops are Milestone 2) and no world source.
 - [ ] **Title screen and pause menu:** new game, continue, save, quit.
 - [ ] **The quest itself:** Anselm's job, built entirely from the data
       formats above (no quest-specific code), including the choice and the
@@ -258,3 +261,7 @@ Settled choices, newest last. Change one only on purpose, and say why here.
 | 2026-11 | Saves are **JSON** (not Godot resources), one file per save plus a thumbnail; 50 manual + 3 rotating autosaves; starting the game continues from the newest | Readable when debugging; resource files can run code on load; ~50 KB per save |
 | 2026-11 | World objects are identified by **node path**; anything saveable joins the `persist` group with `save_state()`/`load_state()` | Simplest thing that works; renaming a node in the editor only resets that object in old saves |
 | 2026-11 | Loading **reloads the scene**, then applies the save (F2 uses the same path) | Nothing from before the load can linger |
+| 2026-11 | Dialogue is a **small plain-text script format** (one file per villager), not JSON or Inspector resources | Easy to write and diff; the user will rewrite all dialogue by hand |
+| 2026-11 | Quests are `QuestData` resources keyed by file name; started only by talking to someone | Content as data; no quest-specific code |
+| 2026-11 | Quest markers are speech bubbles: gold ! new, grey ▶ in progress, gold ▶ ready to hand in | Readable at a glance |
+| 2026-11 | Conversations don't pause the game; they lock the player (no moving, swinging or menus) | Villagers keep breathing; the clock keeps going |

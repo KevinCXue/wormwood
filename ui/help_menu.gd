@@ -28,6 +28,11 @@ const PLAYER := {
 		["Click", "Swing your weapon"],
 		["I / Tab", "Inventory"],
 		["hold Q", "Favourites wheel"],
+		["J", "Journal (your quests)"],
+	],
+	"Talking": [
+		["E", "Talk; then E or Enter for the next line"],
+		["W / S", "Choose a reply (or arrow keys, or 1-9)"],
 	],
 }
 
@@ -63,7 +68,7 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	if not visible:
-		if event.is_action_pressed("help") and not get_tree().paused:
+		if event.is_action_pressed("help") and not get_tree().paused and not get_parent().in_dialogue:
 			_open()
 			get_viewport().set_input_as_handled()
 		return

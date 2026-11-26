@@ -31,7 +31,7 @@ func _input(event: InputEvent) -> void:
 	var f9: bool = event is InputEventKey and event.pressed and not event.echo \
 		and event.physical_keycode == KEY_F9
 	if not visible:
-		if f9 and not get_tree().paused:
+		if f9 and not get_tree().paused and not get_parent().in_dialogue:
 			_open()
 			get_viewport().set_input_as_handled()
 		return

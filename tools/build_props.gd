@@ -53,6 +53,7 @@ const ITEM_INFO := {
 	"axe": [ItemData.Category.WEAPONS, "A woodcutter's axe. Fells trees; does little else well."],
 	"sword": [ItemData.Category.WEAPONS, "A plain iron arming sword."],
 	"log": [ItemData.Category.MATERIALS, "A length of pine trunk, good for building or burning."],
+	"mushroom": [ItemData.Category.FOOD, "A pale cave mushroom with a faint glow. Smells earthy."],
 }
 
 # name -> [model id, mesh node, display name, mass in kg]
@@ -95,6 +96,7 @@ func _initialize() -> void:
 	_build_equipables()
 	_build_light_items()
 	_build_log()
+	_build_mushroom()
 	_build_furniture()
 
 	if FileAccess.file_exists(LAYOUT):
@@ -328,6 +330,53 @@ func _build_log() -> void:
 	cs.basis = lie
 	body.add_child(cs)
 	_pack(body, "%s/log.tscn" % ITEM_DIR)
+
+
+## A cave mushroom (Suspicious Stew quest): a pale stem under a domed brown
+## cap that glows faintly (emission), so they can be found in a dark cave.
+## About 22 cm tall (big for a mushroom, so it's easy to spot and pick up),
+## base at the origin.
+func _build_mushroom() -> void:
+	var stem_mat := StandardMaterial3D.new()
+	stem_mat.albedo_color = Color(0.86, 0.82, 0.72)
+	stem_mat.roughness = 0.8
+	var cap_mat := StandardMaterial3D.new()
+	cap_mat.albedo_color = Color(0.55, 0.38, 0.22)
+	cap_mat.roughness = 0.6
+	cap_mat.emission_enabled = true
+	cap_mat.emission = Color(0.55, 0.85, 0.6)  # a cool green glow
+	cap_mat.emission_energy_multiplier = 1.4
+	var stem := CylinderMesh.new()
+	stem.top_radius = 0.032
+	stem.bottom_radius = 0.042
+	stem.height = 0.15
+	stem.radial_segments = 10
+	var cap := SphereMesh.new()  # a squashed half-sphere
+	cap.radius = 0.095
+	cap.height = 0.09
+	cap.is_hemisphere = true
+	cap.radial_segments = 14
+	cap.rings = 6
+	var mesh := ArrayMesh.new()
+	var st := SurfaceTool.new()
+	st.append_from(stem, 0, Transform3D(Basis(), Vector3(0, 0.075, 0)))
+	st.commit(mesh)
+	mesh.surface_set_material(0, stem_mat)
+	st = SurfaceTool.new()
+	st.append_from(cap, 0, Transform3D(Basis(), Vector3(0, 0.14, 0)))
+	st.commit(mesh)
+	mesh.surface_set_material(1, cap_mat)
+	_save(mesh, "res://assets/models/generated/mushroom.res")
+
+	var body := RigidBody3D.new()
+	body.name = "Mushroom"
+	body.set_script(load("res://item.gd"))
+	body.set("display_name", "Cave Mushroom")
+	body.mass = 0.1
+	_attach_data(body, "mushroom", "Cave Mushroom", 0.1)
+	var saved: Mesh = load("res://assets/models/generated/mushroom.res")
+	_add_mesh_and_shape(body, saved, saved.create_convex_shape(true, true))
+	_pack(body, "%s/mushroom.tscn" % ITEM_DIR)
 
 
 ## Point an item's `data` at props/items/<name>.tres, writing that file first

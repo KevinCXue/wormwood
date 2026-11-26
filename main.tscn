@@ -22,6 +22,9 @@
 [ext_resource type="PackedScene" path="res://ui/quick_wheel.tscn" id="32_wheel"]
 [ext_resource type="PackedScene" path="res://ui/load_menu.tscn" id="33_loadmenu"]
 [ext_resource type="PackedScene" path="res://ui/help_menu.tscn" id="34_help"]
+[ext_resource type="Script" path="res://quests/quest_log.gd" id="35_quests"]
+[ext_resource type="PackedScene" path="res://ui/dialogue_box.tscn" id="36_dialogue"]
+[ext_resource type="PackedScene" path="res://ui/journal.tscn" id="37_journal"]
 
 [sub_resource type="PhysicalSkyMaterial" id="SkyMat_1"]
 ground_color = Color(0.25, 0.27, 0.22, 1)
@@ -193,6 +196,9 @@ fov = 72.75123
 [node name="Inventory" type="Node" parent="Player"]
 script = ExtResource("30_inventory")
 
+[node name="QuestLog" type="Node" parent="Player"]
+script = ExtResource("35_quests")
+
 [node name="Interactor" type="Node" parent="Player"]
 script = ExtResource("12_interactor")
 
@@ -206,3 +212,7 @@ script = ExtResource("16_combat")
 [node name="LoadMenu" parent="Player" instance=ExtResource("33_loadmenu")]
 
 [node name="HelpMenu" parent="Player" instance=ExtResource("34_help")]
+
+[node name="DialogueBox" parent="Player" instance=ExtResource("36_dialogue")]
+
+[node name="Journal" parent="Player" instance=ExtResource("37_journal")]

@@ -26,7 +26,7 @@ const HITTABLE_LAYER := 3  # set by straw_dummy.gd and choppable_tree.gd
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("attack"):
+	if event.is_action_pressed("attack") and not _player.in_dialogue:
 		_swing()
 
 

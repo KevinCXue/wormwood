@@ -1,0 +1,47 @@
+# Tobin, the woodcutter. Gives the side quest "Suspicious Stew".
+# Placeholder text (see VISION.md): rewrite freely, keep the section names.
+# Format: see the header of dialogue/dialogue_script.gd.
+
+== start
+? quest_done suspicious_stew -> after
+? quest_active suspicious_stew -> check
+Tobin: Name's Tobin. I cut wood for the village.
+Tobin: It's Rosalind's birthday tomorrow, and I promised her my mother's mushroom stew.
+Tobin: Trouble is, the right mushrooms only grow in a cave in the woods. I'm no good in the dark.
+- I'll fetch them for you. -> accept
+- What's wrong with ordinary mushrooms? -> why
+- Not my problem. -> END
+
+== why
+Tobin: Ordinary mushrooms don't glow. Mother's stew always glowed a little.
+Tobin: Rosalind says it's why she married me.
+- Fine, I'll find some. -> accept
+- That sounds suspicious. I'll pass. -> END
+
+== accept
+! start_quest suspicious_stew
+Tobin: Five should do it. Follow the trail north-west, past the big house.
+Tobin: And not a word to Rosalind.
+-> END
+
+== check
+? quest_ready suspicious_stew -> ready
+Tobin: Any luck? Five mushrooms, from the cave north-west of town.
+Tobin: Follow the trail past the big house. You can't miss it. Well, you can, but don't.
+-> END
+
+== ready
+Tobin: Are those... they are! Five glowing mushrooms. Can I have them?
+- Yes, here you go. -> give
+- Not yet. -> END
+
+== give
+! take mushroom 5
+! gold 15
+! complete_quest suspicious_stew
+Tobin: Wonderful. Here, fifteen gold. It's all I have until the next load of timber sells.
+-> END
+
+== after
+Tobin: Rosalind loved the stew. She's been humming all morning.
+Tobin: Glowing a little, too.

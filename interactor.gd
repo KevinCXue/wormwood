@@ -36,6 +36,7 @@ extends Node
 @onready var _model: BodySlot = $"../Model"
 @onready var _hud: CanvasLayer = $"../HUD"
 @onready var _inventory: Node = $"../Inventory"
+@onready var _dialogue: CanvasLayer = $"../DialogueBox"
 
 var _target: Item = null         # the item under the crosshair, if any
 var _npc: Npc = null             # the villager under the crosshair, if any
@@ -95,9 +96,11 @@ func _physics_process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed("interact"):
+	if not event.is_action_pressed("interact") or _player.in_dialogue:
 		return
-	if _npc:
+	if _npc and _npc.dialogue_file != "":
+		_dialogue.start(_npc)  # a conversation with choices
+	elif _npc:
 		_talking_to = _npc
 		_hud.show_line(_npc.display_name, _npc.talk())
 	elif _held:
@@ -297,7 +300,9 @@ func _place_equipped() -> void:
 
 
 func _update_hud() -> void:
-	if _npc:
+	if _player.in_dialogue:
+		_hud.hide_prompt()
+	elif _npc:
 		_hud.show_prompt("Talk", _npc.display_name, false)
 	elif _target:
 		var hold := "equip" if _target is Equipable else "carry"
