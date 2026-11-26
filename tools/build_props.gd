@@ -332,51 +332,118 @@ func _build_log() -> void:
 	_pack(body, "%s/log.tscn" % ITEM_DIR)
 
 
-## A cave mushroom (Suspicious Stew quest): a pale stem under a domed brown
-## cap that glows faintly (emission), so they can be found in a dark cave.
-## About 22 cm tall (big for a mushroom, so it's easy to spot and pick up),
-## base at the origin.
+## Cave mushrooms (Suspicious Stew quest), in four shapes that all count as
+## the same item ("Cave Mushroom", props/items/mushroom.tres), so they stack:
+##   mushroom.tscn        medium, the one used when you drop one
+##   mushroom_small.tscn  mushroom_large.tscn
+##   mushroom_pair.tscn   two from one base, drooping opposite ways (worth 2)
+## Stems are built from short tilted segments so they curve and the caps
+## droop. Caps are brown with blue spots (a small generated texture) and a
+## faint blue glow (emission), so they can be found in the dark. A medium one is about 22 cm tall.
 func _build_mushroom() -> void:
-	var stem_mat := StandardMaterial3D.new()
-	stem_mat.albedo_color = Color(0.86, 0.82, 0.72)
-	stem_mat.roughness = 0.8
-	var cap_mat := StandardMaterial3D.new()
-	cap_mat.albedo_color = Color(0.55, 0.38, 0.22)
-	cap_mat.roughness = 0.6
-	cap_mat.emission_enabled = true
-	cap_mat.emission = Color(0.55, 0.85, 0.6)  # a cool green glow
-	cap_mat.emission_energy_multiplier = 1.4
-	var stem := CylinderMesh.new()
-	stem.top_radius = 0.032
-	stem.bottom_radius = 0.042
-	stem.height = 0.15
-	stem.radial_segments = 10
-	var cap := SphereMesh.new()  # a squashed half-sphere
-	cap.radius = 0.095
-	cap.height = 0.09
-	cap.is_hemisphere = true
-	cap.radial_segments = 14
-	cap.rings = 6
-	var mesh := ArrayMesh.new()
-	var st := SurfaceTool.new()
-	st.append_from(stem, 0, Transform3D(Basis(), Vector3(0, 0.075, 0)))
-	st.commit(mesh)
-	mesh.surface_set_material(0, stem_mat)
-	st = SurfaceTool.new()
-	st.append_from(cap, 0, Transform3D(Basis(), Vector3(0, 0.14, 0)))
-	st.commit(mesh)
-	mesh.surface_set_material(1, cap_mat)
-	_save(mesh, "res://assets/models/generated/mushroom.res")
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
+	var mats := _mushroom_materials(rng)
+	var shapes := {
+		"mushroom": [[1.0, 0.0, 0.35]],
+		"mushroom_small": [[0.7, 2.0, 0.5]],
+		"mushroom_large": [[1.35, 4.0, 0.25]],
+		"mushroom_pair": [[1.0, 0.0, 0.8], [0.8, PI, 0.9]],  # [size, droop direction, droop amount]
+	}
+	for item_name in shapes:
+		var mesh := ArrayMesh.new()
+		var stems := SurfaceTool.new()
+		var caps := SurfaceTool.new()
+		var stalks: Array = shapes[item_name]
+		for i in stalks.size():
+			var spec: Array = stalks[i]
+			# Two stalks start a little apart, on either side of the base.
+			var base := Vector3(cos(spec[1]), 0, sin(spec[1])) * (0.025 if stalks.size() > 1 else 0.0)
+			_add_mushroom_stalk(stems, caps, base, spec[0], spec[1], spec[2])
+		stems.commit(mesh)
+		mesh.surface_set_material(0, mats[0])
+		caps.commit(mesh)
+		mesh.surface_set_material(1, mats[1])
+		var mesh_path := "res://assets/models/generated/%s.res" % item_name
+		_save(mesh, mesh_path)
 
-	var body := RigidBody3D.new()
-	body.name = "Mushroom"
-	body.set_script(load("res://item.gd"))
-	body.set("display_name", "Cave Mushroom")
-	body.mass = 0.1
-	_attach_data(body, "mushroom", "Cave Mushroom", 0.1)
-	var saved: Mesh = load("res://assets/models/generated/mushroom.res")
-	_add_mesh_and_shape(body, saved, saved.create_convex_shape(true, true))
-	_pack(body, "%s/mushroom.tscn" % ITEM_DIR)
+		var body := RigidBody3D.new()
+		body.name = item_name.to_pascal_case()
+		body.set_script(load("res://item.gd"))
+		body.set("display_name", "Cave Mushroom")
+		body.set("amount", stalks.size())  # the pair is worth two
+		body.mass = 0.1 * stalks.size()
+		_attach_data(body, "mushroom", "Cave Mushroom", 0.1)
+		var saved: Mesh = load(mesh_path)
+		_add_mesh_and_shape(body, saved, saved.create_convex_shape(true, true))
+		_pack(body, "%s/%s.tscn" % [ITEM_DIR, item_name])
+
+
+## One stem and cap, starting at `base`, `size` times the medium one,
+## bending `droop` radians towards the horizontal direction `towards`.
+func _add_mushroom_stalk(stems: SurfaceTool, caps: SurfaceTool, base: Vector3,
+		size: float, towards: float, droop: float) -> void:
+	const SEGMENTS := 5
+	var height := 0.15 * size
+	var lean_axis := Vector3(cos(towards), 0, sin(towards)).cross(Vector3.UP).normalized()
+	var at := base
+	var up := Vector3.UP
+	for i in SEGMENTS:
+		var t := float(i) / SEGMENTS
+		var seg := CylinderMesh.new()
+		seg.top_radius = lerpf(0.04, 0.032, t + 1.0 / SEGMENTS) * size
+		seg.bottom_radius = lerpf(0.04, 0.032, t) * size
+		seg.height = height / SEGMENTS * 1.15  # overlap a little to hide the joints
+		seg.radial_segments = 10
+		seg.cap_top = false
+		seg.cap_bottom = false
+		# Bend more towards the top: each segment tilts a bit further.
+		up = up.rotated(lean_axis, -droop * (t + 0.1) / SEGMENTS * 2.0).normalized()
+		var basis := Basis(Quaternion(Vector3.UP, up))
+		stems.append_from(seg, 0, Transform3D(basis, at + up * height / SEGMENTS / 2.0))
+		at += up * height / SEGMENTS
+	var cap := SphereMesh.new()
+	cap.radius = 0.095 * size
+	cap.height = 0.09 * size
+	cap.is_hemisphere = true
+	cap.radial_segments = 16
+	cap.rings = 6
+	# The cap droops even more than the stem's tip.
+	var cap_up := up.rotated(lean_axis, -droop * 0.4).normalized()
+	caps.append_from(cap, 0, Transform3D(Basis(Quaternion(Vector3.UP, cap_up)), at - cap_up * 0.01 * size))
+
+
+## [stem material, cap material]. The cap's spots are painted into a small
+## texture (brown with blue spots); the whole cap glows faintly blue.
+func _mushroom_materials(rng: RandomNumberGenerator) -> Array:
+	var stem := StandardMaterial3D.new()
+	stem.albedo_color = Color(0.86, 0.82, 0.72)
+	stem.roughness = 0.8
+	var colour := Image.create(128, 64, false, Image.FORMAT_RGB8)
+	colour.fill(Color(0.52, 0.36, 0.21))
+	# A sphere's texture wraps around it left to right (u) and runs from the
+	# top down (v), so spots near the left edge also wrap round to the right.
+	for i in 22:
+		var centre := Vector2(rng.randf_range(0, 128), rng.randf_range(6, 52))
+		var r := rng.randf_range(2.5, 5.5)
+		for y in range(int(centre.y - r), int(centre.y + r) + 1):
+			for x in range(int(centre.x - r * 2), int(centre.x + r * 2) + 1):
+				# Spots are stretched sideways: u covers a full circle, v half.
+				var d := Vector2((x - centre.x) / 2.0, y - centre.y).length()
+				if d <= r and y >= 0 and y < 64:
+					colour.set_pixel(posmod(x, 128), y, Color(0.32, 0.55, 0.95))
+	# Saved as files of their own: a texture made in memory and only embedded
+	# in the mesh's material doesn't survive being saved with it.
+	_save(ImageTexture.create_from_image(colour), "res://assets/models/generated/mushroom_cap_colour.res")
+	var cap := StandardMaterial3D.new()
+	cap.albedo_texture = load("res://assets/models/generated/mushroom_cap_colour.res")
+	cap.roughness = 0.6
+	# A spots-only glow (an emission texture) lit the whole cap white here, so
+	# the glow is a flat, faint blue instead; the spots are in the colour.
+	cap.emission_enabled = true
+	cap.emission = Color(0.25, 0.45, 0.9)
+	cap.emission_energy_multiplier = 0.1
+	return [stem, cap]
 
 
 ## Point an item's `data` at props/items/<name>.tres, writing that file first

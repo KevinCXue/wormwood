@@ -13,6 +13,8 @@ extends RigidBody3D
 ## and what the inventory stores. See inventory/item_data.gd.
 @export var data: ItemData
 @export var display_name := "Item"  # fallback name for items without data
+## How many of `data` picking this up gives (a pair of mushrooms is worth 2).
+@export var amount := 1
 
 
 func _ready() -> void:

@@ -74,7 +74,7 @@ func start(id: String) -> void:
 		return
 	_started += 1
 	_state[id] = {"stage": 0, "done": false, "order": _started}
-	_hud.show_note("New quest: %s   (J: journal)" % quest(id).title)
+	_hud.show_banner("NEW QUEST", quest(id).title, "J  open journal")
 	changed.emit()
 
 
@@ -91,7 +91,7 @@ func complete(id: String) -> void:
 	if is_done(id):
 		return
 	_state[id].done = true
-	_hud.show_note("Quest complete: %s" % quest(id).title)
+	_hud.show_banner("QUEST COMPLETE", quest(id).title)
 	changed.emit()
 
 

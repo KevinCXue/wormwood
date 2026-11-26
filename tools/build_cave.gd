@@ -9,8 +9,9 @@ extends SceneTree
 ## WARNING: overwrites places/mushroom_cave.tscn. Place and turn the cave in
 ## village/village.tscn (under Wilds) rather than editing the scene.
 ##
-## Shape: a lumpy rock dome, hollowed out, with a tunnel through its front
-## (+Z, like a building's door). It's CSG, as the buildings are: shapes added
+## Shape: a lumpy rock dome, hollowed out, with a ragged arch through its
+## front (+Z): a stretched sphere cut through the wall, roughened by a few
+## smaller cuts around its rim, under a couple of overhanging rocks. It's CSG, as the buildings are: shapes added
 ## and subtracted in tree order, with collision on. The ground inside is the
 ## terrain, flattened by tools/build_village.gd thanks to the "footprint"
 ## metadata, under a rocky floor disc. Boulders around the outside break up
@@ -23,8 +24,8 @@ const OUT := "res://places/mushroom_cave.tscn"
 const RADIUS := 8.0        # outer dome radius
 const WALL := 1.3          # rock thickness
 const SQUASH := 0.7        # dome height / width
-const TUNNEL := Vector2(2.6, 3.0)  # entrance width, height
-const MUSHROOMS := 8       # the quest needs 5
+const ARCH := Vector2(1.5, 2.6)  # entrance half-width and height (metres)
+const MUSHROOM_SPOTS := 9  # clumps; a pair counts as 2 (the quest needs 5)
 
 var rng := RandomNumberGenerator.new()
 var rock: StandardMaterial3D
@@ -66,13 +67,15 @@ func _build_shell() -> void:
 		_sphere("Lump", r, at, Vector3(1.0, rng.randf_range(0.7, 1.0), 1.0))
 	# Hollow it out, leaving WALL of rock, then cut the tunnel.
 	_sphere("Hollow", RADIUS - WALL, Vector3(0, -0.4, 0), Vector3(1.0, SQUASH, 1.1), true)
-	var tunnel := CSGBox3D.new()
-	tunnel.name = "Tunnel"
-	tunnel.size = Vector3(TUNNEL.x, TUNNEL.y, 6.0)
-	tunnel.position = Vector3(0, TUNNEL.y / 2.0 - 0.2, RADIUS * 1.1 - 1.0)
-	tunnel.operation = CSGShape3D.OPERATION_SUBTRACTION
-	tunnel.material = rock
-	_add(shell, tunnel)
+	# The entrance: a sphere stretched into an arch, centred at ground level so
+	# only its top half cuts the wall, long enough (Z) to go right through.
+	var front := RADIUS * 1.1
+	_sphere("Arch", 1.0, Vector3(0, 0, front - 0.6), Vector3(ARCH.x, ARCH.y, 3.2), true)
+	# Smaller bites around the rim, so the edge isn't a clean curve.
+	for i in 5:
+		var a := lerpf(0.25, PI - 0.25, float(i) / 4.0) + rng.randf_range(-0.15, 0.15)
+		var rim := Vector3(cos(a) * ARCH.x, sin(a) * ARCH.y, front - 0.2)
+		_sphere("ArchBite", rng.randf_range(0.45, 0.8), rim, Vector3(1.0, 1.0, 1.6), true)
 
 
 func _sphere(sphere_name: String, radius: float, pos: Vector3, squash: Vector3, subtract := false) -> void:
@@ -129,12 +132,18 @@ func _build_boulders() -> void:
 		cs.shape = shape
 		body.add_child(cs)
 		_add(root_node, body)
-	# Two flanking the entrance, so the way in looks like a way in.
-	for side in [-1.0, 1.0]:
+	# Rocks framing the entrance: one low on each side, and two jutting out
+	# over the top of the arch.
+	var frame := [[Vector3(-(ARCH.x + 1.0), 0.0, RADIUS * 1.1 + 0.4), 8.0],
+		[Vector3(ARCH.x + 1.1, 0.0, RADIUS * 1.1 + 0.3), 7.0],
+		# Over the arch, set back where the dome curves away, so they sit in it.
+		[Vector3(-0.7, ARCH.y + 0.1, RADIUS * 1.1 - 1.5), 7.5],
+		[Vector3(0.9, ARCH.y - 0.1, RADIUS * 1.1 - 1.3), 6.0]]
+	for spec in frame:
 		var body := StaticBody3D.new()
 		body.name = "EntranceBoulder"
-		body.scale = Vector3.ONE * 8.0
-		body.position = Vector3(side * (TUNNEL.x / 2.0 + 1.2), 0.0, RADIUS * 1.1 + 0.6)
+		body.scale = Vector3.ONE * spec[1]
+		body.position = spec[0]
 		body.rotation.y = rng.randf_range(0, TAU)
 		var mi := MeshInstance3D.new()
 		mi.name = "Mesh"
@@ -161,19 +170,24 @@ func _build_lights() -> void:
 		_add(root_node, light)
 
 
-## Mushrooms around the floor, away from the entrance. They're ordinary items
-## placed in the scene, so taking them is saved like any other item.
+## Mushrooms around the floor, away from the entrance: a random mix of the
+## four shapes (small, medium, large, pairs). They're ordinary items placed
+## in the scene, so taking them is saved like any other item.
 func _place_mushrooms() -> void:
-	var scene: PackedScene = load("res://props/items/mushroom.tscn")
+	var kinds := [["mushroom", 3], ["mushroom_small", 3], ["mushroom_large", 2], ["mushroom_pair", 2]]
+	var bag := []  # each kind repeated by its weight, to pick from at random
+	for k in kinds:
+		for i in k[1]:
+			bag.append(load("res://props/items/%s.tscn" % k[0]))
 	var placed := 0
 	var tries := 0
-	while placed < MUSHROOMS and tries < 200:
+	while placed < MUSHROOM_SPOTS and tries < 200:
 		tries += 1
 		var a := rng.randf_range(0.0, TAU)
 		if absf(wrapf(a - PI / 2.0, -PI, PI)) < 0.8:
 			continue  # not in the tunnel
 		var r := rng.randf_range(2.0, RADIUS - WALL - 1.2)
-		var m: Node3D = scene.instantiate()
+		var m: Node3D = bag[rng.randi() % bag.size()].instantiate()
 		m.position = Vector3(cos(a) * r, 0.06, sin(a) * r)
 		m.rotation.y = rng.randf_range(0, TAU)
 		_add(root_node, m)

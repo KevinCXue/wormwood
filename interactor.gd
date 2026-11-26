@@ -198,9 +198,9 @@ func _stash(item: Item) -> void:
 		_take(item)  # nothing to store it as: just carry it
 		return
 	var data := item.data
-	_inventory.add(data)
+	_inventory.add(data, item.amount)
 	item.queue_free()
-	var note := "%s added" % item.get_display_name()
+	var note := ("%s added" if item.amount == 1 else "%s x%d added" % ["%s", item.amount]) % item.get_display_name()
 	if item is Equipable:
 		if data not in _inventory.favourites and _inventory.toggle_favourite(data):
 			note += " to the wheel"
