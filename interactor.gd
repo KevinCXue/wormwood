@@ -49,6 +49,34 @@ var _pressed_for := 0.0          # seconds E has been held on it
 var _saved := {}
 
 
+func _ready() -> void:
+	add_to_group("persist")  # saved by save/save_game.gd, after the Inventory (tree order)
+
+
+## What's in each hand. The bag itself is saved by inventory.gd.
+func save_state() -> Dictionary:
+	return {
+		"equipped": _inventory.equipped.resource_path if _inventory.equipped else "",
+		"carrying": _held.data.resource_path if _held and _held.data else "",
+	}
+
+
+func load_state(state: Dictionary) -> void:
+	var equipped_path: String = state.get("equipped", "")
+	if equipped_path:
+		var data := SaveGame._item_data(equipped_path)
+		if data and _inventory.count_of(data) > 0:
+			equip(data)
+	var carrying_path: String = state.get("carrying", "")
+	if carrying_path:
+		var data := SaveGame._item_data(carrying_path)
+		if data:
+			var item := data.spawn()
+			_player.get_parent().add_child(item)
+			item.global_position = _model.carry_socket.global_position
+			_take(item)
+
+
 func _physics_process(delta: float) -> void:
 	var hit := _find_target()
 	# `as` converts to the given type, or gives null if it isn't one.

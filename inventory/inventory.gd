@@ -23,6 +23,40 @@ const MAX_FAVOURITES := 8  # slots on the wheel
 var _stacks: Array = []  # of [ItemData, count], in the order they were picked up
 
 
+func _ready() -> void:
+	add_to_group("persist")  # saved by save/save_game.gd
+
+
+## Items are stored by their data file's path (res://props/items/axe.tres).
+## What's in the hands is saved by interactor.gd, restored after this.
+func save_state() -> Dictionary:
+	return {
+		"stacks": _stacks.map(func(s): return [s[0].resource_path, s[1]]),
+		"gold": gold,
+		"favourites": favourites.map(func(d): return d.resource_path),
+	}
+
+
+func load_state(state: Dictionary) -> void:
+	_stacks.clear()
+	favourites.clear()
+	equipped = null
+	for s in state.get("stacks", []):
+		var data := _load_data(s[0])
+		if data:
+			_stacks.append([data, int(s[1])])
+	for path in state.get("favourites", []):
+		var data := _load_data(path)
+		if data and favourites.size() < MAX_FAVOURITES:
+			favourites.append(data)
+	gold = int(state.get("gold", 0))
+	changed.emit()
+
+
+func _load_data(path: String) -> ItemData:
+	return SaveGame._item_data(path)
+
+
 func add(data: ItemData, count := 1) -> void:
 	var stack := _find(data)
 	if stack.is_empty():

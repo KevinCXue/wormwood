@@ -1,0 +1,130 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/load_menu.gd" id="1_load"]
+[ext_resource type="FontFile" path="res://assets/fonts/EBGaramond.ttf" id="2_font"]
+
+[sub_resource type="StyleBoxEmpty" id="Empty"]
+
+[sub_resource type="StyleBoxFlat" id="Selected"]
+bg_color = Color(0.93, 0.8, 0.55, 0.18)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="Theme" id="MenuTheme"]
+default_font = ExtResource("2_font")
+default_font_size = 20
+ItemList/colors/font_color = Color(0.97, 0.94, 0.87, 0.85)
+ItemList/colors/font_selected_color = Color(1, 0.97, 0.9, 1)
+ItemList/constants/h_separation = 16
+ItemList/constants/icon_margin = 12
+ItemList/constants/line_separation = 2
+ItemList/constants/v_separation = 8
+ItemList/styles/focus = SubResource("Empty")
+ItemList/styles/panel = SubResource("Empty")
+ItemList/styles/selected = SubResource("Selected")
+ItemList/styles/selected_focus = SubResource("Selected")
+ItemList/styles/hovered = SubResource("Selected")
+ItemList/styles/cursor = SubResource("Empty")
+ItemList/styles/cursor_unfocused = SubResource("Empty")
+Label/colors/font_color = Color(0.97, 0.94, 0.87, 1)
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+content_margin_left = 28.0
+content_margin_top = 20.0
+content_margin_right = 28.0
+content_margin_bottom = 18.0
+bg_color = Color(0.08, 0.07, 0.06, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.93, 0.8, 0.55, 0.35)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="LoadMenu" type="CanvasLayer"]
+process_mode = 3
+layer = 11
+visible = false
+script = ExtResource("1_load")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("MenuTheme")
+
+[node name="Dim" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="Panel" type="PanelContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = -300.0
+offset_right = 380.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Root/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.93, 0.8, 0.55, 1)
+theme_override_font_sizes/font_size = 30
+text = "Load game"
+
+[node name="Line" type="HSeparator" parent="Root/Panel/VBox"]
+modulate = Color(1, 1, 1, 0.3)
+layout_mode = 2
+
+[node name="List" type="ItemList" parent="Root/Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+allow_search = false
+max_text_lines = 2
+fixed_icon_size = Vector2i(160, 90)
+
+[node name="Empty" type="Label" parent="Root/Panel/VBox"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.85, 0.82, 0.75, 0.7)
+text = "No saves yet. Press F5 to save."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Line2" type="HSeparator" parent="Root/Panel/VBox"]
+modulate = Color(1, 1, 1, 0.3)
+layout_mode = 2
+
+[node name="Footer" type="HBoxContainer" parent="Root/Panel/VBox"]
+layout_mode = 2
+
+[node name="Hint" type="Label" parent="Root/Panel/VBox/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.82, 0.75, 0.7)
+theme_override_font_sizes/font_size = 17
+text = "Enter  load      Delete  delete      Esc  close"

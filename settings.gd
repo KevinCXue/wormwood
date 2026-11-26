@@ -36,6 +36,7 @@ func _init() -> void:
 func toggle_character_detail() -> void:
 	character_detail = "blocky" if character_detail == "detailed" else "detailed"
 	print("character detail: ", character_detail)
+	SaveGame.carry_over()  # keep where you are and what you have through the reload
 	get_tree().reload_current_scene()
 
 

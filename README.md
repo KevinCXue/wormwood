@@ -43,7 +43,9 @@ Planned: save/load, villager routines, quests and other RPG systems.
 | Mouse wheel | Zoom (scroll all the way in for first person) |
 | Hold T | Fast-forward time |
 | F2 | Switch between detailed and blocky characters |
-| Esc | Quit |
+| F5 | Save (a new save each time; the newest 50 are kept, plus 3 autosaves) |
+| F9 | List of saves: Enter loads, Delete twice deletes |
+| Esc | Quit (autosaves first; the next start carries on from the newest save) |
 
 ## Project layout
 

@@ -54,8 +54,8 @@ $GODOT --headless --path . --quit     # import + parse check; look for script er
 Controls: WASD/arrows move, hold Shift to run, Space jumps, mouse looks, mouse wheel zooms (all the way in = first person), F switches first/third
 person, E takes into the bag (hold E: carry / equip, E again drops what's
 carried), I or Tab opens the inventory, hold Q for the favourites wheel,
-left click swings, hold T to fast-forward time,
-Esc quits. The input actions are registered in code in `player.gd`, not in
+left click swings, hold T to fast-forward time, F5 saves, F9 lists saves,
+Esc quits (autosaving first). The input actions are registered in code in `player.gd`, not in
 the Project Settings input map.
 
 ## Layout
@@ -64,7 +64,8 @@ the Project Settings input map.
 |---|---|
 | `main.tscn` / `main.gd` | World root: environment, Sun/Moon + `DayNight`, `Terrain3D`, House, props, TestGrove (trees), TrainingYard (dummies), Player. `main.gd` handles global hotkeys. |
 | `player.gd` | `CharacterBody3D`: camera-relative movement, Shift to run (top speed eased between `speed` and `sprint_speed`), jumping, respawn if you fall off the world. Children: `Model` (a `BodySlot`), `CameraRig`, `HUD`, `Interactor`, `Combat`. |
-| `settings.gd` | Autoload `Settings`: `character_detail` (`detailed`/`blocky`) and `quality` (`high`/`low`) from the `wormwood/graphics/*` project settings (quality has a `.macos` override to `low`). CLI override: `-- --detail=blocky --quality=high`. F2 in game toggles detail and reloads the scene (`main.gd`). |
+| `settings.gd` | Autoload `Settings`: `character_detail` (`detailed`/`blocky`) and `quality` (`high`/`low`) from the `wormwood/graphics/*` project settings (quality has a `.macos` override to `low`). CLI override: `-- --detail=blocky --quality=high`. F2 in game toggles detail and reloads the scene (`main.gd`), carrying the game state over via `SaveGame`. |
+| `save/save_game.gd` | Autoload `SaveGame`: JSON saves in `user://saves` (user dir pinned to "Wormwood"), each with a JPG thumbnail. F5 = new manual save (50 kept), autosave every 5 min and on quit (3 kept). Startup continues from the newest save (`-- --new-game` to skip; `-s` tool/test runs never do). Loading reloads the scene, then applies the state. Saves nodes in the **`persist` group** (`save_state()`/`load_state()`) by path, plus every world `Item` (scene-placed ones by path, runtime ones re-spawned from their ItemData). `-- --save-dir=user://test_saves` for tests. |
 | `characters/body_slot.gd` | `class_name BodySlot`: spawns the body for the current detail setting and forwards the **body contract** (listed in its header) to it. Rotate the slot to turn the character. |
 | `characters/humanoid.gd/.tscn` | Detailed body, built lazily (villagers on `apply_look`, the player on its first frame as a hoodless ranger): outfit glTF (peasant/ranger, male/female) is the body and skeleton; the head is cut from the superhero base body by bone weights (`_head_only`), the back of the outfit's own painted-on neck is cut away (`_strip_outfit_neck`, it poked through the nape), and the head is bound to it with eyes, eyebrows and hair. `characters/dye.gdshader` recolours the peasant outfit's linen (`tunic` colour). `AnimationTree` built in code (locomotion blend by speed; legs/hips eased towards the rest pose when standing, because every pack idle has a wide staggered stance; jump; `Idle_Talking` layered on arms/upper spine only for chatting villagers; filtered carry/ready arm poses; upper-body one-shot swing), `BoneAttachment3D` sockets (weapon = right hand, carry = left), `LookAtModifier3D` head turn. First person: the player's arm meshes stay on render layer 1 (rest of body on 2), and a `TwoBoneIK3D` on the right arm brings the hand into view (`fp_hand_offset`), then `characters/fist_grip.gd` (a `SkeletonModifier3D`) turns the hand so the weapon stands upright (`fp_weapon_tilt_deg`) and measures the fist from the finger bones so the weapon is seated in it; both fade out during swings. |
 | `camera_rig.gd` | Orbit camera (yaw node → SpringArm3D pitch → Camera3D) with the first/third-person toggle. `top_level`, so it follows the player in code. |
@@ -77,7 +78,7 @@ the Project Settings input map.
 | `hit_fx.gd` | `HitFx.burst(...)`: static one-shot particle puff. |
 | `day_night.gd` | Moves the sun and moon. The sky (PhysicalSkyMaterial), fog and ambient light follow automatically. |
 | `lights/flicker.gd` | Noise-driven candle/lantern flicker. |
-| `ui/` | `hud.tscn/.gd` (interaction prompt with hold hint, short notes, dialogue subtitle), `crosshair.gd` (dot drawn in `_draw`) `inventory_menu.tscn/.gd` (I/Tab: pauses the game, category tabs, a `Tree` list, a `SubViewport` 3D preview; E equip, F favourite, R drop) and `quick_wheel.tscn/.gd` (hold Q: `Engine.time_scale` slows the world, a ring drawn in `_draw` shows up to 8 favourites, mouse movement picks a slot, release to equip/put away a weapon or hold anything else; right click removes a slot). |
+| `ui/` | `hud.tscn/.gd` (interaction prompt with hold hint, short notes, dialogue subtitle), `crosshair.gd` (dot drawn in `_draw`) `inventory_menu.tscn/.gd` (I/Tab: pauses the game, category tabs, a `Tree` list, a `SubViewport` 3D preview; E equip, F favourite, R drop) and `load_menu.tscn/.gd` (F9: `ItemList` of saves with thumbnails, Enter loads, Delete twice deletes) and `quick_wheel.tscn/.gd` (hold Q: `Engine.time_scale` slows the world, a ring drawn in `_draw` shows up to 8 favourites, mouse movement picks a slot, release to equip/put away a weapon or hold anything else; right click removes a slot). |
 | `npcs/` | `npc.tscn/.gd` (`class_name Npc`): a villager. Look exports (`body_type`, colours, hair) go to the body via `apply_look()`; watches the player via `set_look_target()`; `talk()` returns their next line. |
 | `village/` | `village.tscn`: Roads (`road.gd`, `class_name Road`: a `Path3D` with a `width`; curve point Y = road height), Plazas (`plaza.gd`, `class_name Plaza`: a flat paved area at its Y), Buildings and Villagers. **Hand-editable source of truth for the village layout.** First written from `tools/village_layout.gd`. |
 | `buildings/` | Generated by `tools/build_buildings.gd`: cottages, family houses, church, town hall, market stalls, well. Each root has a `footprint` metadata entry (Vector2 metres) that `build_village.gd` reads. A lighting check (`_light_rooms`) adds fixed wall lanterns until every floor spot reaches `MIN_LIGHT`; it prints what each building needed. |
@@ -90,6 +91,12 @@ the Project Settings input map.
 
 ## Conventions
 
+- **Saving:** anything with state that should survive a save joins the
+  `persist` group and implements `save_state() -> Dictionary` (plain JSON
+  data; `SaveGame.vector_to_array()` etc. for vectors) and
+  `load_state(state)`. It's keyed by its node path, so renaming a node in the
+  editor makes old saves forget it. Bump `SaveGame.VERSION` when a format
+  changes in a way old saves can't read.
 - **Scale:** 1 unit = 1 metre. The player is 1.8 m tall with its origin at the
   feet. Forward is **-Z** (Godot's convention), for models too.
 - **Physics layers** (named in `project.godot`): 1 `world` (everything solid),
@@ -157,9 +164,8 @@ Ask the user before re-running a script that overwrites their editor work.
 
 ## Future notes
 
-- When save/load is added, set `application/config/use_custom_user_dir` in
-  `project.godot`. Otherwise a project rename moves `user://` and orphans
-  existing saves.
+- `user://` is pinned to "Wormwood" (`use_custom_user_dir` in
+  `project.godot`), so renaming the project won't orphan saves.
 - Town layout: the main street runs south from the spawn point (0, 0) to
   the square (~(2, 37), y 1) and climbs on south. Market west of the square,
   town hall east, church on the south-east hill (~(44, 56), y 9). Natural

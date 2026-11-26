@@ -57,6 +57,30 @@ func _ready() -> void:
 	_notch.texture_albedo = _get_notch_texture()
 	# Collision layer 3 = "hittable": combat.gd looks for targets there.
 	set_collision_layer_value(3, true)
+	add_to_group("persist")  # saved by save/save_game.gd
+
+
+## Standing or felled (save/save_game.gd). Partly chopped trees come back
+## whole; that's fine.
+func save_state() -> Dictionary:
+	return {
+		"felled": _falling,
+		"fall_direction": SaveGame.vector_to_array(_fall_dir),
+		"logs_left": _falling and _landed_for > lie_time,
+	}
+
+
+## Restore a felled tree straight to its final state: just the stump. If it
+## was saved before it had turned into logs, leave them now.
+func load_state(state: Dictionary) -> void:
+	if not state.get("felled", false) or _falling:
+		return
+	_fall(SaveGame.array_to_vector(state.fall_direction))
+	_landed_for = lie_time + 3.0
+	_visual.queue_free()
+	set_physics_process(false)
+	if not state.get("logs_left", false):
+		_leave_logs()
 
 
 ## Called by combat.gd. `from` is where the attacker stands, `dir` the swing direction.

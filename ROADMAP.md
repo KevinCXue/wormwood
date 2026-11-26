@@ -68,13 +68,16 @@ Systems this forces into existence, roughly in build order:
       the town believes the star is (versus what it really is), Anselm's
       place in that, and three rumours villagers can mention. Enough that
       the first quest's lines point the right way.
-- [ ] **Stable IDs for world objects:** every tree, placed item and villager
-      gets an ID that survives a reload, so the save can say "this tree is
-      felled" and Milestone 2's crime system can say who owns what.
-- [ ] **Save/load:** player position and facing, time of day, inventory and
-      equipped item, quest states, felled trees, moved and taken items.
-      Set `use_custom_user_dir` first (see `CLAUDE.md`). Version the save
-      format from day one.
+- [x] **Stable IDs for world objects:** objects are identified by their node
+      path from the world root (see the decision log). Ownership for
+      Milestone 2's crime system will hang off the same IDs.
+- [x] **Save/load:** player position, camera and view, time of day, the bag,
+      gold, favourites, equipped and carried items, felled trees, and moved,
+      taken and dropped items. JSON in a pinned user folder, versioned. F5
+      saves (50 kept), autosave every 5 minutes and on quit (3 kept), F9 lists
+      saves with thumbnails, and starting the game continues from the newest.
+      Quest states join when quests exist (they just need the `persist`
+      group).
 - [ ] **Dialogue with choices:** data-driven conversations (one resource
       per conversation) with conditions such as "has quest" or "has 5 logs"
       and effects such as "start quest" or "take 5 logs".
@@ -252,3 +255,6 @@ Settled choices, newest last. Change one only on purpose, and say why here.
 | 2026-11 | Visual bar stays ambitious (holds up next to commercial open-world RPGs), through cohesion and lighting, not photorealism | Personal goal; must still run on the Air |
 | 2026-11 | Fun over sandbox: every milestone has a playtest "fun check", and every quest needs a hook, a choice or a reveal | The goal is a game people want to finish (`VISION.md`) |
 | 2026-11 | No references to other studios' games or worlds anywhere in the repo (code, docs, names, lore) | Original work; describe the genre instead |
+| 2026-11 | Saves are **JSON** (not Godot resources), one file per save plus a thumbnail; 50 manual + 3 rotating autosaves; starting the game continues from the newest | Readable when debugging; resource files can run code on load; ~50 KB per save |
+| 2026-11 | World objects are identified by **node path**; anything saveable joins the `persist` group with `save_state()`/`load_state()` | Simplest thing that works; renaming a node in the editor only resets that object in old saves |
+| 2026-11 | Loading **reloads the scene**, then applies the save (F2 uses the same path) | Nothing from before the load can linger |

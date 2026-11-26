@@ -29,6 +29,7 @@ func _ready() -> void:
 	# Groups are tags any node can look up: villagers find the player with
 	# get_tree().get_first_node_in_group("player") instead of a fixed path.
 	add_to_group("player")
+	add_to_group("persist")  # saved by save/save_game.gd (see save_state below)
 	_spawn_point = global_position
 	_move_speed = speed
 	# Set up the controls in code, so you can see exactly what they are.
@@ -104,6 +105,30 @@ func _physics_process(delta: float) -> void:
 	if global_position.y < -10.0:
 		global_position = _spawn_point
 		velocity = Vector3.ZERO
+
+
+## Where you are and how you're looking (save/save_game.gd).
+func save_state() -> Dictionary:
+	return {
+		"position": SaveGame.vector_to_array(global_position),
+		"body_yaw": _model.rotation.y,
+		"camera_yaw": _camera_rig.rotation.y,
+		"camera_pitch": _camera_rig.get_node("SpringArm3D").rotation.x,
+		"camera_distance": _camera_rig.third_person_distance,
+		"first_person": _camera_rig.first_person,
+	}
+
+
+func load_state(state: Dictionary) -> void:
+	global_position = SaveGame.array_to_vector(state.position)
+	velocity = Vector3.ZERO
+	_model.rotation.y = state.get("body_yaw", 0.0)
+	_camera_rig.rotation.y = state.get("camera_yaw", 0.0)
+	_camera_rig.get_node("SpringArm3D").rotation.x = state.get("camera_pitch", 0.0)
+	_camera_rig.third_person_distance = state.get("camera_distance", _camera_rig.third_person_distance)
+	_camera_rig._set_first_person(state.get("first_person", false))
+	# The camera normally glides after the player; jump it there instead.
+	_camera_rig.global_position = _camera_rig._target_position()
 
 
 func _add_mouse_action(action: String, button: MouseButton) -> void:

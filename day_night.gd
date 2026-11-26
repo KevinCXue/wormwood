@@ -30,6 +30,19 @@ extends Node
 @export var noon_color := Color(1.0, 0.96, 0.9)
 
 
+func _ready() -> void:
+	add_to_group("persist")  # saved by save/save_game.gd
+
+
+func save_state() -> Dictionary:
+	return {"time_of_day": time_of_day}
+
+
+func load_state(state: Dictionary) -> void:
+	time_of_day = state.get("time_of_day", time_of_day)
+	_update_lights()
+
+
 func _process(delta: float) -> void:
 	# _process runs once per rendered frame. That's right for purely visual
 	# things like lighting; gameplay physics stays in _physics_process.
