@@ -44,6 +44,7 @@ func _ready() -> void:
 	_add_action("toggle_view", [KEY_F])  # first / third person (camera_rig.gd)
 	_add_action("inventory", [KEY_I, KEY_TAB])  # open the bag (ui/inventory_menu.gd)
 	_add_action("quick_select", [KEY_Q])  # hold for the favourites wheel (ui/quick_wheel.gd)
+	_add_action("help", [KEY_H])  # the controls screen (ui/help_menu.gd)
 	_add_mouse_action("attack", MOUSE_BUTTON_LEFT)  # swing the equipped item (combat.gd)
 
 
