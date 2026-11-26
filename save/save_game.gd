@@ -201,6 +201,21 @@ func read_save(path: String) -> Dictionary:
 	return state
 
 
+## Start a new game: reload the world without restoring any save. Existing
+## saves are kept (they're still in the F9 list).
+func new_game() -> void:
+	_pending = {}
+	_first_world = false  # so world_ready() doesn't continue from the latest
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	get_tree().reload_current_scene()
+
+
+## The current world (main.tscn's root), or null. Used by the console.
+func world() -> Node:
+	return _world if _world and is_instance_valid(_world) else null
+
+
 ## Reload the world and restore `path` into it.
 func load_save(path: String) -> void:
 	var state := read_save(path)

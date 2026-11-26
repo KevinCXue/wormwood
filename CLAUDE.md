@@ -69,6 +69,7 @@ a key, update the table at the top of `ui/help_menu.gd`** (and the README).
 |---|---|
 | `main.tscn` / `main.gd` | World root: environment, Sun/Moon + `DayNight`, `Terrain3D`, House, props, TestGrove (trees), TrainingYard (dummies), Player. `main.gd` handles global hotkeys. |
 | `player.gd` | `CharacterBody3D`: camera-relative movement, Shift to run (top speed eased between `speed` and `sprint_speed`), jumping, respawn if you fall off the world. Children: `Model` (a `BodySlot`), `CameraRig`, `HUD`, `Interactor`, `Combat`. |
+| `debug/console.gd/.tscn` | Autoload `Console` (debug builds only): `` ` `` opens a paused command line: `quest list/start/stage/complete/reset`, `give`/`take ITEM N`, `items`, `gold N`, `tp PLACE/VILLAGER/X Y Z`, `time HH:MM`, `save`, `load`, `newgame`, `help`. History and Tab completion. Documented in `docs/console.md`. |
 | `settings.gd` | Autoload `Settings`: `character_detail` (`detailed`/`blocky`) and `quality` (`high`/`low`) from the `wormwood/graphics/*` project settings (quality has a `.macos` override to `low`). CLI override: `-- --detail=blocky --quality=high`. F2 in game toggles detail and reloads the scene (`main.gd`), carrying the game state over via `SaveGame`. |
 | `save/save_game.gd` | Autoload `SaveGame`: JSON saves in `user://saves` (user dir pinned to "Wormwood"), each with a JPG thumbnail. F5 = new manual save (50 kept), autosave every 5 min and on quit (3 kept). Startup continues from the newest save (`-- --new-game` to skip; `-s` tool/test runs never do). Loading reloads the scene, then applies the state. Saves nodes in the **`persist` group** (`save_state()`/`load_state()`) by path, plus every world `Item` (scene-placed ones by path, runtime ones re-spawned from their ItemData). `-- --save-dir=user://test_saves` for tests. |
 | `characters/body_slot.gd` | `class_name BodySlot`: spawns the body for the current detail setting and forwards the **body contract** (listed in its header) to it. Rotate the slot to turn the character. |
@@ -95,7 +96,7 @@ a key, update the table at the top of `ui/help_menu.gd`** (and the README).
 | `terrain/` | Terrain3D data, materials and vegetation colliders (generated). |
 | `addons/terrain_3d/` | Third-party Terrain3D plugin (native binaries included). Don't edit it. |
 | `tools/` | Headless generator scripts, see below. |
-| `docs/` | README screenshot. `.gdignore` keeps Godot from importing it. |
+| `docs/` | README screenshot and `console.md` (developer console reference). `.gdignore` keeps Godot from importing it. |
 
 ## Conventions
 
@@ -110,6 +111,10 @@ a key, update the table at the top of `ui/help_menu.gd`** (and the README).
   `dialogue_file`. No code. Item names in scripts are file names in
   `props/items/`. (When the game is first exported, add `*.txt` to the export
   filter, or the dialogue files won't be packed.)
+- **Console commands:** when a new system lands (shops, routines...), add
+  console commands to test it (`debug/console.gd`) and document them in
+  `docs/console.md`. Use them when testing instead of playing through.
+  `SaveGame.new_game()` starts a fresh world without deleting saves.
 - **Menus** check `not get_tree().paused and not get_parent().in_dialogue`
   before opening.
 - **Scale:** 1 unit = 1 metre. The player is 1.8 m tall with its origin at the

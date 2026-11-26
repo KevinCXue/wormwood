@@ -120,7 +120,7 @@ func toggle_favourite(data: ItemData) -> bool:
 
 
 func add_gold(amount: int) -> void:
-	gold += amount
+	gold = maxi(gold + amount, 0)  # negative amounts take gold away
 	changed.emit()
 
 

@@ -21,6 +21,7 @@ run/max_fps=60
 
 Settings="*res://settings.gd"
 SaveGame="*res://save/save_game.gd"
+Console="*res://debug/console.tscn"
 
 [display]
 

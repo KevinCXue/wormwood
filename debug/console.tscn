@@ -1,0 +1,69 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://debug/console.gd" id="1_console"]
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+bg_color = Color(0.05, 0.05, 0.05, 0.9)
+border_width_bottom = 1
+border_color = Color(0.93, 0.8, 0.55, 0.4)
+
+[sub_resource type="StyleBoxFlat" id="InputStyle"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0.5)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.2)
+
+[sub_resource type="Theme" id="ConsoleTheme"]
+default_font_size = 15
+LineEdit/styles/focus = SubResource("InputStyle")
+LineEdit/styles/normal = SubResource("InputStyle")
+RichTextLabel/colors/default_color = Color(0.88, 0.88, 0.86, 1)
+
+[node name="Console" type="CanvasLayer"]
+process_mode = 3
+layer = 100
+script = ExtResource("1_console")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = SubResource("ConsoleTheme")
+
+[node name="Panel" type="PanelContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+anchor_bottom = 0.42
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Panel"]
+layout_mode = 2
+
+[node name="Output" type="RichTextLabel" parent="Root/Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 0
+bbcode_enabled = true
+scroll_following = true
+selection_enabled = true
+
+[node name="Input" type="LineEdit" parent="Root/Panel/VBox"]
+layout_mode = 2
+placeholder_text = "Type a command (help for the list)"
+caret_blink = true

@@ -29,6 +29,17 @@ func _ready() -> void:
 			_quests[quest.id()] = quest
 
 
+## Every quest id in the game (for the console's tab completion).
+func all_ids() -> Array:
+	return _quests.keys()
+
+
+## Forget a quest entirely, as if never started (console: quest reset).
+func reset(id: String) -> void:
+	if _state.erase(id):
+		changed.emit()
+
+
 func quest(id: String) -> QuestData:
 	if not _quests.has(id):
 		push_warning("unknown quest: " + id)

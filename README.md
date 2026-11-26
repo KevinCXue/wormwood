@@ -67,6 +67,12 @@ Planned: the main questline, villager routines and other RPG systems.
 - `tools/`: scripts that generate the terrain, props, buildings and the
   town. See the header comment in each for how to run it.
 
+## Development
+
+In development runs (from the Godot editor), `` ` `` opens a developer console
+for testing: reset quests, give items, teleport, set the time. See
+[docs/console.md](docs/console.md).
+
 ## Graphics settings
 
 Characters can be **detailed** (rigged, animated models) or **blocky**
