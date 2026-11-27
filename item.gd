@@ -16,6 +16,10 @@ extends RigidBody3D
 ## How many of `data` picking this up gives (a pair of mushrooms is worth 2).
 @export var amount := 1
 
+## The player took this (into the bag or into their hand). Lets the world
+## react to a pickup, e.g. places/spirit_ambush.gd.
+signal taken
+
 
 func _ready() -> void:
 	# Groups are tags. Later, the pickup code can find all items with

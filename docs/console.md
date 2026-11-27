@@ -37,6 +37,9 @@ it's always current.
 | `hurt AMOUNT` | Damage yourself (test the health bar, or dying). |
 | `god` | Toggle invulnerability. |
 | `kill VILLAGER` | Kill a villager (their quests fail). |
+| `spirit` | Raise a forest spirit 8 m in front of you (it attacks at once). |
+| `spirit kill` | Destroy every forest spirit. |
+| `spirit reset` | Undo the cave ambush, so taking a cave mushroom raises the spirit again. |
 | `save` | Save, like F5. |
 | `load` | Load the newest save. |
 | `newgame` | Start a new game. Your saves are kept (F9 still lists them). |
@@ -59,6 +62,16 @@ quest start suspicious_stew
 give mushroom 5
 tp tobin
 ```
+
+Replay the forest spirit ambush at the cave:
+
+```
+spirit reset
+quest start suspicious_stew
+tp cave
+```
+
+Then take a mushroom and walk out.
 
 See the town at night:
 

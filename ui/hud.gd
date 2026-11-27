@@ -125,9 +125,9 @@ func show_target(target_name: String, health: Health) -> void:
 
 
 ## A short message under the prompt that fades after a moment.
-func show_note(text: String) -> void:
+func show_note(text: String, seconds := 1.6) -> void:
 	_note.text = text
-	_note_time_left = 1.6
+	_note_time_left = seconds
 	_note.modulate.a = 1.0
 	_note.visible = true
 

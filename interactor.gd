@@ -199,6 +199,7 @@ func _stash(item: Item) -> void:
 		return
 	var data := item.data
 	_inventory.add(data, item.amount)
+	item.taken.emit()
 	item.queue_free()
 	var note := ("%s added" if item.amount == 1 else "%s x%d added" % ["%s", item.amount]) % item.get_display_name()
 	if item is Equipable:
@@ -248,6 +249,7 @@ func _find_target() -> Node3D:
 
 
 func _take(item: Item) -> void:
+	item.taken.emit()
 	_held = item
 	_grab(item, _model.carry_socket)
 	_model.holding = true

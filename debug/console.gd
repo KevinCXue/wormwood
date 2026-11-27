@@ -48,6 +48,8 @@ func _ready() -> void:
 		"hurt": [_hurt, "hurt AMOUNT", "Damage yourself (to test the health bar or dying)."],
 		"god": [_god, "god", "Toggle invulnerability."],
 		"kill": [_kill, "kill VILLAGER", "Kill a villager (their quests fail)."],
+		"spirit": [_spirit, "spirit [kill | reset]",
+			"Raise a forest spirit 8 m in front of you. kill = destroy every spirit; reset = undo the cave ambush so it can happen again."],
 		"save": [_save, "save", "Save the game (like F5)."],
 		"load": [_load, "load", "Load the newest save."],
 		"newgame": [_newgame, "newgame", "Start a new game. Saves are kept."],
@@ -270,6 +272,35 @@ func _kill(args: PackedStringArray) -> void:
 	_error("no villager called \"%s\"." % args[0])
 
 
+func _spirit(args: PackedStringArray) -> void:
+	var what := args[0].to_lower() if args.size() > 0 else ""
+	match what:
+		"":
+			var player := _player()
+			if player == null:
+				return
+			var spirit: Node3D = load("res://enemies/forest_spirit.tscn").instantiate()
+			var forward: Vector3 = -player.get_node("CameraRig").global_basis.z
+			forward.y = 0.0
+			var at: Vector3 = player.global_position + forward.normalized() * 8.0
+			spirit.home = at
+			spirit.position = at  # top_level, so this is world space
+			SaveGame.world().add_child(spirit)
+			_say("A forest spirit rises. (Close the console to face it.)")
+		"kill":
+			var spirits := get_tree().get_nodes_in_group("spirits")
+			for s in spirits:
+				if not s.is_dead():
+					s.health.damage(s.health.health)
+			_say("%d spirit(s) destroyed." % spirits.size())
+		"reset":
+			for a in get_tree().get_nodes_in_group("spirit_ambush"):
+				a.reset()
+			_say("Cave ambush reset: taking a cave mushroom raises the spirit again.")
+		_:
+			_error("usage: spirit [kill | reset]")
+
+
 func _save(_args: PackedStringArray) -> void:
 	var path := SaveGame.save("manual")
 	_say("Saved to %s." % path if path else "Nothing to save here.")
@@ -398,6 +429,8 @@ func _complete() -> void:
 				options = _places(SaveGame.world()).keys() if SaveGame.world() and arg == 0 else []
 			"help":
 				options = _commands.keys() if arg == 0 else []
+			"spirit":
+				options = ["kill", "reset"] if arg == 0 else []
 			"kill":
 				options = get_tree().get_nodes_in_group("npcs").map(func(n): return n.display_name.to_lower()) if arg == 0 else []
 	var partial: String = words[-1]

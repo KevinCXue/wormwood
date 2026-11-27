@@ -144,15 +144,17 @@ func _physics_process(delta: float) -> void:
 
 ## The hittable contract (see combat.gd): a villager hits you with `weapon`
 ## (null = a fist).
-func on_hit(weapon: Equipable, _from: Vector3, dir: Vector3, attacker: Node3D = null) -> void:
+## `amount` overrides the damage, for attackers that aren't swinging a
+## weapon item (the forest spirit's branch whip).
+func on_hit(weapon: Equipable, _from: Vector3, dir: Vector3, attacker: Node3D = null, amount := -1) -> void:
 	if health.is_dead():
 		return
-	health.damage(Health.damage_from(weapon), attacker)
+	health.damage(amount if amount >= 0 else Health.damage_from(weapon), attacker)
 	_since_hurt = 0.0
 	_model.flinch()
 	HitFx.burst(self, global_position + Vector3.UP * 1.2, Color(0.55, 0.06, 0.05), dir, 10, 0.025, 2.0)
 	_hud.flash_hurt()
-	if attacker is Npc:
+	if attacker and attacker.get("health") is Health:  # a villager, the spirit...
 		_hud.show_target(attacker.display_name, attacker.health)
 
 

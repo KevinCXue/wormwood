@@ -275,6 +275,7 @@ Settled choices, newest last. Change one only on purpose, and say why here.
 | 2026-11 | Esc opens a pause menu instead of quitting; quitting (and quitting to title) autosaves | No surprise saves or exits |
 | 2026-11 | A developer console (backtick) in debug builds, documented in docs/console.md rather than in game | Fast testing; players never see it |
 | 2026-11 | Combat pulled forward. Health: player 40, men 20, women 10 (per-villager overrides); damage: sword 10, axe 8, fist 3 | The planned lore needs combat |
+| 2026-11 | A forest spirit ambushes the player outside the mushroom cave after the first mushroom is taken (18 damage whips, 50 health, once per game) | First enemy; makes the cave errand dangerous |
 | 2026-11 | Villagers react by default by body type (men fight, women flee), overridable per villager (`reaction`); guards fight with swords | User's design; overrides keep it flexible (the guard captain fights) |
 | 2026-11 | Only the player's attacks raise the alarm; witnesses within 10 m | Villagers defending themselves shouldn't set the town on each other |
 | 2026-11 | Deaths are permanent and saved; a quest giver's death fails their quests | Consequences |
