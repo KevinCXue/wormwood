@@ -6,13 +6,7 @@ Bugs and polish only. The order of work lives in `ROADMAP.md`.
 
 Things that are broken. Fix these soon.
 
-- **Women don't visibly flee when attacked.** Reported in play (2026-11-26).
-  The combat test sees Rosalind switch to the FLEE state after a punch, so
-  the reaction fires; the running itself seems not to happen. Suspects:
-  `Npc._flee()` / `_move()` in `npcs/npc.gd` (stuck against a wall or her
-  house, the "dodge" veer not getting her out, or not counting as on the
-  floor), or the walk animation not playing. Repro: punch Rosalind (by
-  Tobin's cottage, `tp rosalind` in the console) and watch.
+_None known._
 
 ## Polish
 

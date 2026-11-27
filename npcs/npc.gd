@@ -69,8 +69,13 @@ enum State { CALM, FIGHT, FLEE, RETURN, DEAD }
 @export var give_up_distance := 30.0  # metres: fighters stop chasing beyond this
 @export var safe_distance := 25.0     # metres: fleers feel safe beyond this...
 @export var calm_down_time := 6.0     # ...for this many seconds, then go home
+## Metres ahead they look for walls when running or walking (see _steer).
+@export var probe_distance := 2.0
 
 const ATTENTION_TIME := 6.0 # seconds they keep facing you after you talk
+const STUCK_CHECK := 0.6     # seconds between "am I getting anywhere?" checks
+const STUCK_DISTANCE := 0.4  # metres: less progress than this per check = stuck
+const DETOUR_TIME := 1.5     # seconds spent going the open way when stuck
 ## The save system's static helpers, by file: referring to the SaveGame
 ## autoload by name would stop this script compiling in tool and test runs.
 const SaveHelpers := preload("res://save/save_game.gd")
@@ -88,7 +93,13 @@ var _attention := 0.0         # seconds left of turning to face the player
 var _grounded := false        # snapped down onto the ground yet?
 var _cooldown := 0.0          # seconds until they can swing again
 var _calm_for := 0.0          # seconds a fleer has felt safe; seconds spent going home
-var _dodge := 0.0             # fleeing into a wall: seconds left of veering sideways
+var _steer_dir := Vector3.ZERO  # the way they're actually heading (see _steer)
+var _steer_side := 1.0          # which way they last went round an obstacle (+1 / -1)
+var _steer_frame := -10         # the physics frame _steer last ran on
+var _stuck_timer := 0.0         # seconds steered since the last progress check
+var _stuck_from := Vector3.ZERO # where they were at the last progress check
+var _detour := Vector3.ZERO     # stuck: the open way they're taking instead...
+var _detour_time := 0.0         # ...for this many more seconds
 var _held_weapon: Equipable = null  # the drawn weapon, while fighting
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -289,7 +300,7 @@ func _fight(delta: float) -> void:
 		return
 	_model.set_look_target(_threat.global_position + Vector3.UP * 1.5)
 	if dist > attack_reach:
-		_move(to.normalized() * chase_speed, delta)
+		_move(_steer(to, minf(probe_distance, dist), delta) * chase_speed, delta)
 	else:
 		_move(Vector3.ZERO, delta)
 		_face(to, delta * 3.0)
@@ -309,13 +320,7 @@ func _flee(delta: float) -> void:
 			return
 	else:
 		_calm_for = 0.0
-	var dir := away.normalized()
-	if _dodge > 0.0:  # ran into a wall: veer off to one side for a moment
-		_dodge -= delta
-		dir = dir.rotated(Vector3.UP, PI / 2.0)
-	_move(dir * flee_speed, delta)
-	if is_on_wall() and _dodge <= 0.0:
-		_dodge = 1.0
+	_move(_steer(away, probe_distance, delta) * flee_speed, delta)
 
 
 func _go_home(delta: float) -> void:
@@ -329,7 +334,7 @@ func _go_home(delta: float) -> void:
 		_state = State.CALM
 		_grounded = false  # settle onto the ground again
 		return
-	_move(to.normalized() * walk_speed, delta)
+	_move(_steer(to, minf(probe_distance, to.length()), delta) * walk_speed, delta)
 
 
 func _calm_down() -> void:
@@ -357,6 +362,121 @@ func _attack() -> void:
 	if to.length() <= attack_reach + 0.6 and facing.dot(to.normalized()) > 0.3:
 		if _threat.has_method("on_hit"):
 			_threat.on_hit(_held_weapon, global_position, to.normalized(), self)
+
+
+## The way to go to head along `want` (flat) without walking into a wall:
+## "context steering", a cheap stand-in for pathfinding. Try `want` first,
+## then directions fanning out from it (30° to one side, 30° to the other,
+## 60°...), and take the first one that's clear for `reach` metres. Good
+## enough to round a house or slip out of a corner; a maze would beat it.
+##
+## They keep going round an obstacle the side they started on
+## (`_steer_side`), and the result is smoothed, so they don't flick back and
+## forth at a corner.
+##
+## Local steering can still trap someone (every nearby way looks worse than
+## where they are), so it also watches for that: trying to move but barely
+## getting anywhere means "stuck", and they head off the most open way
+## for a moment (a "detour") before trying the way they want again.
+func _steer(want: Vector3, reach: float, delta: float) -> Vector3:
+	want = _flat(want).normalized()
+	if want == Vector3.ZERO:
+		return want
+	_check_stuck(want, delta)
+	if _detour_time > 0.0:
+		_detour_time -= delta
+		want = _detour
+	var chosen := Vector3.ZERO
+	for step in 7:  # 0°, ±30°, ±60° ... 180°
+		var sides := [1.0] if step == 0 or step == 6 else [_steer_side, -_steer_side]
+		for side: float in sides:
+			var dir := want.rotated(Vector3.UP, deg_to_rad(30.0 * step) * side)
+			if _free_distance(dir, reach) >= reach:
+				chosen = dir
+				if step > 0:
+					_steer_side = side
+				break
+		if chosen != Vector3.ZERO:
+			break
+	if chosen == Vector3.ZERO:
+		chosen = want  # boxed in: push on and let move_and_slide slide along
+	if _steer_dir == Vector3.ZERO:
+		_steer_dir = chosen
+	_steer_dir = _steer_dir.lerp(chosen, 1.0 - exp(-8.0 * delta))
+	if _steer_dir.length() < 0.1:  # turning right round: no halfway to smooth through
+		_steer_dir = chosen
+	_steer_dir = _steer_dir.normalized()
+	return _steer_dir
+
+
+## Every STUCK_CHECK seconds of steering, see how far they got. Less than
+## STUCK_DISTANCE: pick the most open of 12 directions (leaning towards
+## `want`) and follow it for DETOUR_TIME.
+func _check_stuck(want: Vector3, delta: float) -> void:
+	# Only count time spent steering: a fighter standing still to swing isn't stuck.
+	var frame := Engine.get_physics_frames()
+	if frame != _steer_frame + 1:
+		_stuck_timer = 0.0
+		_stuck_from = global_position
+	_steer_frame = frame
+	_stuck_timer += delta
+	if _stuck_timer < STUCK_CHECK:
+		return
+	var progress := _flat(global_position - _stuck_from).length()
+	_stuck_timer = 0.0
+	_stuck_from = global_position
+	if progress >= STUCK_DISTANCE or _detour_time > 0.0:
+		return
+	var best := -INF
+	for i in 12:
+		var dir := want.rotated(Vector3.UP, TAU * i / 12.0)
+		var score := _free_distance(dir, 4.0) + dir.dot(want)
+		# test_move: would the body itself bump into something half a metre
+		# that way? Catches being wedged, where the probe can be fooled.
+		if test_move(global_transform, dir * 0.5):
+			score -= 10.0
+		if score > best:
+			best = score
+			_detour = dir
+	_detour_time = DETOUR_TIME
+
+
+## How far (up to `reach` metres) could they walk along `dir` before
+## bumping into something?
+##
+## A "shape cast": slide a capsule about their size through the physics
+## world and ask how far it gets (cast_motion returns the fraction of the
+## move that's safe). Rays would be cheaper but slip past thin things that
+## stop a body, like a stall's counter top or a post at the shoulder.
+##
+## The capsule starts 0.35 m up so a gentle slope or a step ahead isn't a
+## wall, and it's a little thinner than the body so being pressed against a
+## wall doesn't count as already stuck. If it does hit, ground that faces
+## mostly up (a gentle hillside) still counts as clear. Only the world layer is
+## checked, and not whoever they're chasing or running from.
+func _free_distance(dir: Vector3, reach: float) -> float:
+	var space := get_world_3d().direct_space_state
+	var capsule := CapsuleShape3D.new()
+	capsule.radius = 0.25
+	capsule.height = 1.8 * height_scale - 0.35
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = capsule
+	query.collision_mask = 1  # the world layer
+	query.transform = Transform3D(Basis(), global_position + Vector3.UP * (0.35 + capsule.height / 2.0))
+	query.motion = dir * reach
+	query.exclude = [get_rid()] + ([_threat.get_rid()] if _threat is CollisionObject3D else [])
+	var safe := space.cast_motion(query)
+	if safe[1] >= 1.0:  # the whole move is free
+		return reach
+	# What's in the way? Put the capsule where it touches and ask.
+	query.transform.origin += query.motion * safe[1]
+	query.motion = Vector3.ZERO
+	var info := space.get_rest_info(query)
+	# A little stricter than the body's own limit (floor_max_angle, 45° by
+	# default): a slope right at the limit stops them dead.
+	if not info.is_empty() and info.normal.y >= cos(floor_max_angle) + 0.1:
+		return reach  # only the ground rising: walkable
+	return reach * safe[0]
 
 
 ## Walk/run with gravity, turning the body to face the way they're going.
